@@ -4,6 +4,9 @@ import type { Db } from '../db'
 
 export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
 
+/** Conexión o transacción: para helpers que se usan dentro y fuera de una transacción */
+export type Consultor = Db | Tx
+
 export type TipoMovimiento = typeof movimientoInventario.$inferInsert['tipo']
 
 interface Movimiento {

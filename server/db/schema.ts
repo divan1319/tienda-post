@@ -9,10 +9,12 @@ import {
   numeric,
   index,
   primaryKey,
-  check
+  check,
+  uniqueIndex
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 import { UNIDADES_MEDIDA } from '../../shared/utils/cantidad'
+import { METODOS_PAGO } from '../../shared/utils/ventas'
 
 // Todas las fechas se guardan como timestamptz (ver docs/PLAN.md, "Reglas generales").
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true })
@@ -198,6 +200,89 @@ export const entradaInventarioDetalle = pgTable('entrada_inventario_detalle', {
 }, t => [
   primaryKey({ columns: [t.entradaId, t.productoId] }),
   check('entrada_detalle_cantidad_positiva', sql`${t.cantidad} > 0`)
+])
+
+// ==========================================
+// CAJA
+// ==========================================
+
+export const turnoCaja = pgTable('turno_caja', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  userId: text('user_id').notNull().references(() => user.id),
+  abiertoAt: timestamptz('abierto_at').notNull().defaultNow(),
+  montoInicialCentavos: integer('monto_inicial_centavos').notNull(),
+  cerradoAt: timestamptz('cerrado_at'),
+  // Se calculan y guardan al cerrar
+  efectivoEsperadoCentavos: integer('efectivo_esperado_centavos'),
+  efectivoContadoCentavos: integer('efectivo_contado_centavos'),
+  diferenciaCentavos: integer('diferencia_centavos'),
+  nota: text('nota')
+}, t => [
+  // Un solo turno abierto por usuario y tienda
+  uniqueIndex('turno_caja_abierto_unico').on(t.tiendaId, t.userId).where(sql`${t.cerradoAt} is null`),
+  index('turno_caja_tienda_abierto_idx').on(t.tiendaId, t.abiertoAt),
+  check('turno_caja_monto_inicial_no_negativo', sql`${t.montoInicialCentavos} >= 0`),
+  check('turno_caja_contado_no_negativo', sql`${t.efectivoContadoCentavos} >= 0`)
+])
+
+// Efectivo que sale de un turno (lo registra el admin)
+export const salidaCaja = pgTable('salida_caja', {
+  id: serial('id').primaryKey(),
+  turnoId: integer('turno_id').notNull().references(() => turnoCaja.id),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  userId: text('user_id').notNull().references(() => user.id),
+  montoCentavos: integer('monto_centavos').notNull(),
+  motivo: text('motivo').notNull(),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  index('salida_caja_turno_id_idx').on(t.turnoId),
+  check('salida_caja_monto_positivo', sql`${t.montoCentavos} > 0`)
+])
+
+// ==========================================
+// VENTAS
+// ==========================================
+
+export const metodoPago = pgEnum('metodo_pago', METODOS_PAGO)
+export const estadoVenta = pgEnum('estado_venta', ['completada', 'anulada'])
+
+export const venta = pgTable('venta', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  turnoId: integer('turno_id').notNull().references(() => turnoCaja.id),
+  correlativo: integer('correlativo').notNull(),
+  userId: text('user_id').notNull().references(() => user.id),
+  totalCentavos: integer('total_centavos').notNull(),
+  metodoPago: metodoPago('metodo_pago').notNull(),
+  montoRecibidoCentavos: integer('monto_recibido_centavos').notNull(),
+  cambioCentavos: integer('cambio_centavos').notNull().default(0),
+  estado: estadoVenta('estado').notNull().default('completada'),
+  conStockInsuficiente: boolean('con_stock_insuficiente').notNull().default(false),
+  anuladaPor: text('anulada_por').references(() => user.id),
+  anuladaAt: timestamptz('anulada_at'),
+  motivoAnulacion: text('motivo_anulacion'),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  uniqueIndex('venta_tienda_correlativo_unico').on(t.tiendaId, t.correlativo),
+  index('venta_tienda_fecha_idx').on(t.tiendaId, t.createdAt),
+  index('venta_turno_id_idx').on(t.turnoId),
+  check('venta_total_no_negativo', sql`${t.totalCentavos} >= 0`),
+  check('venta_cambio_no_negativo', sql`${t.cambioCentavos} >= 0`)
+])
+
+// Guarda nombre, unidad y precio del momento de la venta
+export const ventaDetalle = pgTable('venta_detalle', {
+  ventaId: integer('venta_id').notNull().references(() => venta.id),
+  productoId: integer('producto_id').notNull().references(() => producto.id),
+  nombreProducto: text('nombre_producto').notNull(),
+  unidadMedida: unidadMedida('unidad_medida').notNull(),
+  precioUnitarioCentavos: integer('precio_unitario_centavos').notNull(),
+  cantidad: cantidad('cantidad').notNull(),
+  subtotalCentavos: integer('subtotal_centavos').notNull()
+}, t => [
+  primaryKey({ columns: [t.ventaId, t.productoId] }),
+  check('venta_detalle_cantidad_positiva', sql`${t.cantidad} > 0`)
 ])
 
 // ==========================================

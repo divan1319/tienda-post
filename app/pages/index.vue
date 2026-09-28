@@ -1,8 +1,26 @@
 <script setup lang="ts">
+import { hoyLocal } from '~/utils/fechas'
+
 useSeoMeta({ title: 'Panel' })
 
 const { usuario, esAdmin } = useUsuario()
 const { estado, tiendaActiva } = useTiendaActiva()
+
+// Ventas de hoy en la tienda activa (la vendedora ve solo las suyas)
+const hoy = hoyLocal()
+const { data: ventasHoy } = await useFetch('/api/ventas', {
+  query: computed(() => ({
+    tiendaId: esAdmin.value ? estado.value.tiendaActivaId ?? undefined : undefined,
+    desde: hoy,
+    hasta: hoy,
+    limit: 1
+  })),
+  immediate: !!estado.value.tiendaActivaId
+})
+
+const { data: turnoActual } = await useFetch('/api/caja/turno-actual', {
+  immediate: !!estado.value.tiendaActivaId
+})
 </script>
 
 <template>
@@ -24,26 +42,56 @@ const { estado, tiendaActiva } = useTiendaActiva()
           >
             {{ tiendaActiva.direccion }}
           </p>
-        </UCard>
-
-        <UCard variant="outline">
-          <SectionLabel>Usuario</SectionLabel>
-          <p class="mt-2 text-lg font-semibold text-highlighted">
+          <p class="mt-2 text-sm">
             {{ usuario?.name }}
+            <UBadge
+              :label="esAdmin ? 'Admin' : 'Vendedora'"
+              :color="esAdmin ? 'primary' : 'neutral'"
+              variant="subtle"
+              class="ms-1"
+            />
           </p>
-          <UBadge
-            :label="esAdmin ? 'Admin' : 'Vendedora'"
-            :color="esAdmin ? 'primary' : 'neutral'"
-            variant="subtle"
-            class="mt-1"
-          />
         </UCard>
 
         <UCard variant="outline">
-          <SectionLabel>Tiendas disponibles</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-lg font-semibold text-highlighted">
-            {{ estado.tiendas.length }}
+          <SectionLabel>{{ esAdmin ? 'Ventas de hoy en la tienda' : 'Mis ventas de hoy' }}</SectionLabel>
+          <p class="carbon-data-mono mt-2 text-2xl font-semibold text-highlighted">
+            {{ formatUSD(ventasHoy?.resumen.totalCentavos ?? 0) }}
           </p>
+          <p class="carbon-data-mono text-sm text-muted">
+            {{ ventasHoy?.resumen.ventas ?? 0 }} venta(s)
+          </p>
+        </UCard>
+
+        <UCard variant="outline">
+          <SectionLabel>Caja</SectionLabel>
+          <p class="mt-2 text-sm">
+            <UBadge
+              :label="turnoActual?.turno ? 'Turno abierto' : 'Sin turno abierto'"
+              :color="turnoActual?.turno ? 'success' : 'neutral'"
+              variant="subtle"
+            />
+          </p>
+          <p
+            v-if="turnoActual?.turno"
+            class="carbon-data-mono mt-2 text-sm text-muted"
+          >
+            Efectivo esperado: {{ formatUSD(turnoActual.turno.resumen.efectivoEsperadoCentavos) }}
+          </p>
+          <div class="mt-3 flex gap-2">
+            <UButton
+              to="/pos"
+              label="Vender"
+              icon="i-lucide-shopping-cart"
+            />
+            <UButton
+              to="/caja"
+              label="Caja"
+              icon="i-lucide-wallet"
+              color="neutral"
+              variant="outline"
+            />
+          </div>
         </UCard>
       </div>
 

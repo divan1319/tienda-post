@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
       cantidad: l.cantidad
     })))
 
-    for (const linea of body.lineas) {
+    // Por productoId: mismo orden de bloqueo de stock que las ventas (sin deadlocks)
+    for (const linea of [...body.lineas].sort((a, b) => a.productoId - b.productoId)) {
       await aplicarMovimiento(tx, {
         tiendaId: body.tiendaId,
         productoId: linea.productoId,

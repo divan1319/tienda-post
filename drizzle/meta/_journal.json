@@ -15,6 +15,13 @@
       "when": 1790634072089,
       "tag": "0001_catalogo_inventario",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790635892153,
+      "tag": "0002_ventas_caja",
+      "breakpoints": true
     }
   ]
 }

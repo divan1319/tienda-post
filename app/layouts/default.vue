@@ -7,7 +7,10 @@ const { limpiar } = useTiendaActiva()
 
 const items = computed<NavigationMenuItem[][]>(() => {
   const general: NavigationMenuItem[] = [
-    { label: 'Panel', icon: 'i-lucide-layout-dashboard', to: '/' }
+    { label: 'Panel', icon: 'i-lucide-layout-dashboard', to: '/' },
+    { label: 'Punto de venta', icon: 'i-lucide-shopping-cart', to: '/pos' },
+    { label: 'Caja', icon: 'i-lucide-wallet', to: '/caja' },
+    { label: 'Ventas', icon: 'i-lucide-receipt', to: '/ventas' }
   ]
 
   if (!esAdmin.value) return [general]
