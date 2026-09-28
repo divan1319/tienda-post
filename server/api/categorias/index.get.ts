@@ -8,7 +8,7 @@ const querySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const todas = isAdmin(session.user) && query.incluirInactivas === 'true'
 
   return useDb()

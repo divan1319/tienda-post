@@ -14,7 +14,7 @@ const querySchema = z.object({
 // Kardex: movimientos por tienda (y producto) con el saldo acumulado después de cada uno.
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
 
   // El saldo se calcula sobre todo el historial y luego se filtra por fecha y tipo,

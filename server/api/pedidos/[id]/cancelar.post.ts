@@ -4,7 +4,7 @@ import { pedido } from '~~/server/db/schema'
 // Cancela un pedido pendiente (no genera compra).
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
 
   const [cancelado] = await useDb()
     .update(pedido)

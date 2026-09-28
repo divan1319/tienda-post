@@ -4,7 +4,7 @@ import type { Tx } from './inventario'
 
 /** Datos de dinero comunes a compra directa y recepción de pedido. */
 export const datosCompraSchema = z.object({
-  totalCentavos: z.number().int().positive('El total debe ser mayor que cero').max(100_000_000),
+  totalCentavos: z.number({ error: 'El total es obligatorio' }).int('El total va en centavos enteros').positive('El total debe ser mayor que cero').max(100_000_000),
   numeroFactura: z.string().trim().max(60).nullish().transform(v => v || null),
   // Hoy por defecto; el admin puede cambiarla, pero no a una fecha futura
   fechaCompra: fechaSchema

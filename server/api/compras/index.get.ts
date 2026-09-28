@@ -11,7 +11,7 @@ const querySchema = paginacionSchema.extend({
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
 
   // fecha_compra es una fecha local: se compara directo con desde/hasta

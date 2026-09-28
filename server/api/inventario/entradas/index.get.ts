@@ -7,7 +7,7 @@ const querySchema = paginacionSchema.extend({
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
   const where = query.tiendaId ? eq(entradaInventario.tiendaId, query.tiendaId) : undefined
 

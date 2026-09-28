@@ -9,8 +9,8 @@ const bodySchema = z.object({
 // Salida de efectivo suelta (gasto menor, etc.). Solo admin.
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(bodySchema))
 
   return useDb().transaction(tx => registrarSalida(tx, {
     turnoId: id,

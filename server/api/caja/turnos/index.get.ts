@@ -12,7 +12,7 @@ const querySchema = paginacionSchema.extend({
 // Admin: todos los turnos (filtros por tienda y abiertos). Vendedora: solo los suyos.
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
 
   const filtros: (SQL | undefined)[] = [

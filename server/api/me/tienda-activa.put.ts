@@ -8,7 +8,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const { tiendaId } = await readValidatedBody(event, bodySchema.parse)
+  const { tiendaId } = await readValidatedBody(event, validar(bodySchema))
 
   if (!(await puedeUsarTienda(session.user, tiendaId))) {
     throw createError({ statusCode: 403, statusMessage: 'No tienes acceso a esta tienda.' })

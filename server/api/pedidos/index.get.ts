@@ -12,7 +12,7 @@ const hoySV = sql`(now() AT TIME ZONE 'America/El_Salvador')::date`
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
 
   const where = and(

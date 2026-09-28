@@ -8,7 +8,7 @@ export const tiendaSchema = z.object({
 })
 
 export const idParamSchema = z.object({
-  id: z.coerce.number().int().positive()
+  id: z.coerce.number({ error: 'Identificador inválido' }).int('Identificador inválido').positive('Identificador inválido')
 })
 
 // ---------- Catálogo ----------
@@ -47,3 +47,19 @@ export const pedidoSchema = z.object({
   fechaEsperada: fechaSchema,
   nota: z.string().trim().max(500).nullish().transform(v => v || null)
 })
+
+/**
+ * Validador para readValidatedBody / getValidatedQuery / getValidatedRouterParams.
+ * h3 usa el `message` del error como mensaje de la respuesta: así llega el primer
+ * mensaje legible de Zod (p. ej. «La fecha de compra no puede ser futura») en vez
+ * del JSON de todos los errores.
+ */
+export function validar<T extends z.ZodType>(schema: T) {
+  return (data: unknown): z.output<T> => {
+    const resultado = schema.safeParse(data)
+    if (!resultado.success) {
+      throw new Error(resultado.error.issues[0]?.message ?? 'Los datos enviados no son válidos.')
+    }
+    return resultado.data
+  }
+}

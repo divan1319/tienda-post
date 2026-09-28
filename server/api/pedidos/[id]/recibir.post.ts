@@ -5,8 +5,8 @@ import { pedido } from '~~/server/db/schema'
 // también la salida de caja que la paga. Todo en una transacción.
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, datosCompraSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(datosCompraSchema))
 
   return useDb().transaction(async (tx) => {
     const [p] = await tx.select().from(pedido).where(eq(pedido.id, id)).for('update')

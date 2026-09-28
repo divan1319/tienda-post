@@ -4,8 +4,8 @@ import { pedido } from '~~/server/db/schema'
 // Edita un pedido pendiente.
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, pedidoSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(pedidoSchema))
   await requireTiendaActiva(session.user, body.tiendaId)
 
   const [actualizado] = await useDb()

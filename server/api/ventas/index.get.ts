@@ -14,7 +14,7 @@ const querySchema = paginacionSchema.extend({
 // Admin: todas (filtro opcional por tienda). Vendedora: solo sus ventas en su tienda activa.
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const db = useDb()
 
   let filtroTienda: SQL | undefined

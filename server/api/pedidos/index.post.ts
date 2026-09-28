@@ -2,7 +2,7 @@ import { pedido } from '~~/server/db/schema'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const body = await readValidatedBody(event, pedidoSchema.parse)
+  const body = await readValidatedBody(event, validar(pedidoSchema))
   await requireTiendaActiva(session.user, body.tiendaId)
 
   const [nuevo] = await useDb()

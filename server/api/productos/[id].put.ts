@@ -3,8 +3,8 @@ import { movimientoInventario, producto } from '~~/server/db/schema'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, productoSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(productoSchema))
   const db = useDb()
 
   const [actual] = await db.select({ unidadMedida: producto.unidadMedida }).from(producto).where(eq(producto.id, id)).limit(1)

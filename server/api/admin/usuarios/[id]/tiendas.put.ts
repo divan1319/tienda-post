@@ -10,8 +10,8 @@ const bodySchema = z.object({
 // Reemplaza las tiendas asignadas a un usuario.
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, paramsSchema.parse)
-  const { tiendaIds } = await readValidatedBody(event, bodySchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(paramsSchema))
+  const { tiendaIds } = await readValidatedBody(event, validar(bodySchema))
   const db = useDb()
 
   const [u] = await db.select({ id: user.id }).from(user).where(eq(user.id, id)).limit(1)

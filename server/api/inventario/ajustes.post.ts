@@ -15,7 +15,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const body = await readValidatedBody(event, validar(bodySchema))
 
   await requireTiendaActiva(session.user, body.tiendaId)
 

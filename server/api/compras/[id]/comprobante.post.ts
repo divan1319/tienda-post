@@ -6,7 +6,7 @@ const MAX_COMPROBANTE_BYTES = 10 * 1024 * 1024
 // Sube o reemplaza el comprobante (foto o PDF). En la base se guarda solo la key.
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
   const db = useDb()
 
   const [actual] = await db
