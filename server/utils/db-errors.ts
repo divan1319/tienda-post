@@ -27,7 +27,9 @@ export function handleDbError(err: unknown): never {
   if (code === '23505' || detail.toLowerCase().includes('duplicate key') || detail.toLowerCase().includes('unique constraint')) {
     let friendlyMessage = 'Ya existe un registro con estos datos en la base de datos.'
 
-    if (constraint.includes('tienda_nombre') || detail.includes('(nombre)')) {
+    if (constraint.includes('codigo_barras') || detail.includes('codigo_barras')) {
+      friendlyMessage = 'Ya existe un producto con este código de barras.'
+    } else if (constraint.includes('nombre') || detail.includes('(nombre)')) {
       friendlyMessage = 'Ya existe un registro con este nombre.'
     } else if (constraint.includes('email') || detail.includes('email')) {
       friendlyMessage = 'Ya existe un usuario registrado con este correo electrónico.'

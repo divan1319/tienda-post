@@ -8,6 +8,13 @@
       "when": 1790631787519,
       "tag": "0000_base",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790634072089,
+      "tag": "0001_catalogo_inventario",
+      "breakpoints": true
     }
   ]
 }
