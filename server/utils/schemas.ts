@@ -37,3 +37,13 @@ export const paginacionSchema = z.object({
 
 /** Cantidad con signo positivo; la validación por unidad de medida se hace con validarCantidad */
 export const cantidadSchema = z.number().finite()
+
+// ---------- Pedidos ----------
+
+export const pedidoSchema = z.object({
+  tiendaId: z.number().int().positive(),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(150),
+  proveedor: z.string().trim().max(150).nullish().transform(v => v || null),
+  fechaEsperada: fechaSchema,
+  nota: z.string().trim().max(500).nullish().transform(v => v || null)
+})

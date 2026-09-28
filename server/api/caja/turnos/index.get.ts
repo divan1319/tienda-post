@@ -50,5 +50,15 @@ export default defineEventHandler(async (event) => {
     db.select({ total: count() }).from(turnoCaja).where(where)
   ])
 
-  return { total: total?.total ?? 0, items }
+  // Para los turnos abiertos se agrega el efectivo disponible (para elegir de cuál pagar)
+  if (query.abiertos === 'true') {
+    const conEsperado = await Promise.all(items.map(async (t) => {
+      const [turno] = await db.select().from(turnoCaja).where(eq(turnoCaja.id, t.id)).limit(1)
+      const { efectivoEsperadoCentavos } = await resumenTurno(db, turno!)
+      return { ...t, efectivoDisponibleCentavos: efectivoEsperadoCentavos as number | null }
+    }))
+    return { total: total?.total ?? 0, items: conEsperado }
+  }
+
+  return { total: total?.total ?? 0, items: items.map(t => ({ ...t, efectivoDisponibleCentavos: null as number | null })) }
 })

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { hoyLocal } from '~/utils/fechas'
-
 useSeoMeta({ title: 'Panel' })
 
 const { usuario, esAdmin } = useUsuario()
@@ -21,6 +19,24 @@ const { data: ventasHoy } = await useFetch('/api/ventas', {
 const { data: turnoActual } = await useFetch('/api/caja/turno-actual', {
   immediate: !!estado.value.tiendaActivaId
 })
+
+// Pedidos pendientes de todas las tiendas (solo admin): hoy, atrasados y próximos
+const { data: pedidos } = await useFetch('/api/pedidos', {
+  query: { estado: 'pendiente', limit: 200 },
+  immediate: esAdmin.value
+})
+const pendientes = computed(() => pedidos.value?.items ?? [])
+const grupos = computed(() => ({
+  atrasado: pendientes.value.filter(p => p.situacion === 'atrasado'),
+  hoy: pendientes.value.filter(p => p.situacion === 'hoy'),
+  proximo: pendientes.value.filter(p => p.situacion === 'proximo')
+}))
+const GRUPO_LABEL = { hoy: 'Hoy', atrasado: 'Atrasados', proximo: 'Próximos' } as const
+
+function formatFecha(fecha: string) {
+  const [a, m, d] = fecha.split('-')
+  return `${d}/${m}/${a}`
+}
 </script>
 
 <template>
@@ -94,6 +110,72 @@ const { data: turnoActual } = await useFetch('/api/caja/turno-actual', {
           </div>
         </UCard>
       </div>
+
+      <UCard
+        v-if="esAdmin"
+        variant="outline"
+        class="mt-4"
+      >
+        <template #header>
+          <div class="flex items-center justify-between">
+            <SectionLabel>Pedidos pendientes</SectionLabel>
+            <UButton
+              to="/pedidos"
+              label="Ver pedidos"
+              size="xs"
+              color="neutral"
+              variant="outline"
+            />
+          </div>
+        </template>
+        <UEmpty
+          v-if="!pendientes.length"
+          icon="i-lucide-clipboard-check"
+          title="Sin pedidos pendientes"
+          variant="naked"
+          size="sm"
+        />
+        <div
+          v-else
+          class="grid gap-4 lg:grid-cols-3"
+        >
+          <div
+            v-for="clave in (['hoy', 'atrasado', 'proximo'] as const)"
+            :key="clave"
+          >
+            <p class="mb-2 flex items-center gap-2 text-sm font-medium">
+              {{ GRUPO_LABEL[clave] }}
+              <UBadge
+                :label="String(grupos[clave].length)"
+                :color="clave === 'atrasado' && grupos[clave].length ? 'error' : clave === 'hoy' && grupos[clave].length ? 'warning' : 'neutral'"
+                variant="subtle"
+              />
+            </p>
+            <ul
+              v-if="grupos[clave].length"
+              class="divide-y divide-default border border-default text-sm"
+            >
+              <li
+                v-for="p in grupos[clave].slice(0, 6)"
+                :key="p.id"
+                class="flex justify-between gap-2 px-3 py-2"
+              >
+                <span class="min-w-0 truncate">
+                  {{ p.nombre }}
+                  <span class="block text-xs text-muted">{{ p.tiendaNombre }}{{ p.proveedor ? ` · ${p.proveedor}` : '' }}</span>
+                </span>
+                <span class="carbon-data-mono shrink-0 text-xs text-muted">{{ formatFecha(p.fechaEsperada) }}</span>
+              </li>
+            </ul>
+            <p
+              v-else
+              class="text-sm text-muted"
+            >
+              —
+            </p>
+          </div>
+        </div>
+      </UCard>
 
       <UEmpty
         v-if="esAdmin && !estado.tiendas.length"

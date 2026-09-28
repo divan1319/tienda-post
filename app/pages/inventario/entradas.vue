@@ -96,6 +96,17 @@ const errores = computed(() => lineas.value.map(l =>
 ))
 const valida = computed(() => !!tiendaEntrada.value && lineas.value.length > 0 && errores.value.every(e => !e))
 
+// Atajo desde «Recibir pedido»: /inventario/entradas?nueva=1&tiendaId=…&nota=…
+const route = useRoute()
+onMounted(() => {
+  if (route.query.nueva !== '1') return
+  abrir()
+  const tienda = Number(route.query.tiendaId)
+  if (tiendaItems.value.some(t => t.value === tienda)) tiendaEntrada.value = tienda
+  if (typeof route.query.nota === 'string') nota.value = route.query.nota
+  navigateTo({ query: {} }, { replace: true })
+})
+
 async function guardar() {
   if (!valida.value) return
   guardando.value = true
