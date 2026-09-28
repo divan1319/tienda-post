@@ -1,4 +1,4 @@
-# Plan de implementación — Sistema POS para dos tiendas
+# Plan de implementación — Sistema POS para tiendas
 
 > Documento de referencia para implementar el sistema. Implementar **una fase a la vez** (ver "Fases de implementación") y detenerse al final de cada fase para revisión.
 
