@@ -1,6 +1,7 @@
 import { inArray } from 'drizzle-orm'
 import { producto } from '../db/schema'
 import type { UnidadMedida } from '../../shared/utils/cantidad'
+import type { Consultor } from './inventario'
 
 interface Linea {
   productoId: number
@@ -12,13 +13,13 @@ interface Linea {
  * sin repetidos y con cantidades válidas para su unidad de medida.
  * Devuelve los productos indexados por id.
  */
-export async function validarLineas(lineas: Linea[]) {
+export async function validarLineas(lineas: Linea[], q: Consultor = useDb()) {
   const ids = lineas.map(l => l.productoId)
   if (new Set(ids).size !== ids.length) {
     throw createError({ statusCode: 400, statusMessage: 'Hay productos repetidos; junta sus cantidades en una sola línea.' })
   }
 
-  const productos = await useDb()
+  const productos = await q
     .select({
       id: producto.id,
       nombre: producto.nombre,

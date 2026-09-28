@@ -1,0 +1,32 @@
+/*
+ * Impresión de tickets y cortes con window.print(): en pantalla la zona de impresión
+ * está oculta; al imprimir se oculta todo lo demás. La zona se monta con <ZonaImpresion>,
+ * que la teletransporta como hija directa de <body>.
+ */
+.zona-impresion {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 4mm;
+  }
+
+  body > *:not(.zona-impresion) {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .zona-impresion {
+    display: block !important;
+    width: 72mm;
+    color: #000;
+    background: #fff;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+}
