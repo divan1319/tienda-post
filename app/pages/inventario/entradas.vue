@@ -49,10 +49,11 @@ const detalleAbierto = computed({
     if (!v) detalleId.value = null
   }
 })
-const { data: detalle, status: detalleStatus } = await useFetch(() => `/api/inventario/entradas/${detalleId.value}`, {
-  immediate: false,
-  watch: [detalleId]
-})
+const { data: detalle, status: detalleStatus } = await useAsyncData(
+  'entrada-detalle',
+  () => detalleId.value ? $fetch(`/api/inventario/entradas/${detalleId.value}`) : Promise.resolve(null),
+  { watch: [detalleId] }
+)
 
 // ---------- Nueva entrada ----------
 

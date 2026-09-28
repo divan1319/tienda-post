@@ -168,7 +168,7 @@ async function guardar() {
               <span class="text-muted">Stock actual:</span>
               {{ formatCantidad(producto.stock, producto.unidadMedida) }}
               <template v-if="stockResultante !== null">
-                <span class="text-muted"> → queda:</span>
+                <span class="text-muted"> → queda: </span>
                 <span :class="stockResultante < 0 ? 'text-error' : 'text-highlighted'">
                   {{ formatCantidad(stockResultante, producto.unidadMedida) }}
                 </span>

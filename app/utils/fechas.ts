@@ -1,14 +1,23 @@
 const ZONA = 'America/El_Salvador'
 
-const fechaHora = new Intl.DateTimeFormat('es-SV', {
+// Se arma a partir de partes numéricas: el texto de Intl con estilo (p. ej. «p. m.»)
+// cambia entre las versiones de ICU de Node y del navegador y rompe la hidratación.
+const partesFechaHora = new Intl.DateTimeFormat('en-US', {
   timeZone: ZONA,
-  dateStyle: 'short',
-  timeStyle: 'short'
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23'
 })
 
-/** Fecha y hora en la zona horaria de El Salvador (igual en SSR y en el cliente). */
+/** `dd/mm/aaaa HH:mm` en la zona horaria de El Salvador (igual en SSR y en el cliente). */
 export function formatFechaHora(valor: string | Date): string {
-  return fechaHora.format(new Date(valor))
+  const p = Object.fromEntries(
+    partesFechaHora.formatToParts(new Date(valor)).map(parte => [parte.type, parte.value])
+  )
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`
 }
 
 /** Fecha de hoy en El Salvador como `YYYY-MM-DD`. */
