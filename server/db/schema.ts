@@ -1,17 +1,25 @@
 import {
   pgTable,
+  pgEnum,
   text,
   integer,
   boolean,
   timestamp,
   serial,
+  numeric,
   index,
-  primaryKey
+  primaryKey,
+  check
 } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
+import { UNIDADES_MEDIDA } from '../../shared/utils/cantidad'
 
 // Todas las fechas se guardan como timestamptz (ver docs/PLAN.md, "Reglas generales").
 const timestamptz = (name: string) => timestamp(name, { withTimezone: true })
+
+// Cantidades: numeric(12,3) leído como number (hasta 9 enteros + 3 decimales cabe
+// sin pérdida en un double). Las sumas de stock se hacen en SQL.
+const cantidad = (name: string) => numeric(name, { precision: 12, scale: 3, mode: 'number' })
 
 // ==========================================
 // TIENDAS
@@ -113,6 +121,86 @@ export const usuarioTienda = pgTable('usuario_tienda', {
 ])
 
 // ==========================================
+// CATÁLOGO
+// ==========================================
+
+export const unidadMedida = pgEnum('unidad_medida', UNIDADES_MEDIDA)
+
+export const categoria = pgTable('categoria', {
+  id: serial('id').primaryKey(),
+  nombre: text('nombre').notNull().unique(),
+  activa: boolean('activa').notNull().default(true)
+})
+
+export const producto = pgTable('producto', {
+  id: serial('id').primaryKey(),
+  nombre: text('nombre').notNull(),
+  codigoBarras: text('codigo_barras').unique(),
+  categoriaId: integer('categoria_id').references(() => categoria.id),
+  // El precio es por esta unidad y es el mismo en todas las tiendas
+  unidadMedida: unidadMedida('unidad_medida').notNull().default('unidad'),
+  precioVentaCentavos: integer('precio_venta_centavos').notNull(),
+  fotoKey: text('foto_key'),
+  activo: boolean('activo').notNull().default(true),
+  createdAt: timestamptz('created_at').notNull().defaultNow(),
+  updatedAt: timestamptz('updated_at').notNull().defaultNow()
+}, t => [
+  check('producto_precio_no_negativo', sql`${t.precioVentaCentavos} >= 0`),
+  index('producto_categoria_id_idx').on(t.categoriaId)
+])
+
+// ==========================================
+// INVENTARIO
+// ==========================================
+
+export const stockTienda = pgTable('stock_tienda', {
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  productoId: integer('producto_id').notNull().references(() => producto.id),
+  // Puede quedar negativa (se permite vender sin stock suficiente)
+  cantidad: cantidad('cantidad').notNull().default(0),
+  stockMinimo: cantidad('stock_minimo')
+}, t => [
+  primaryKey({ columns: [t.tiendaId, t.productoId] })
+])
+
+export const tipoMovimiento = pgEnum('tipo_movimiento', ['entrada', 'venta', 'anulacion_venta', 'ajuste'])
+
+export const movimientoInventario = pgTable('movimiento_inventario', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  productoId: integer('producto_id').notNull().references(() => producto.id),
+  tipo: tipoMovimiento('tipo').notNull(),
+  // Con signo: positiva suma al stock, negativa resta
+  cantidad: cantidad('cantidad').notNull(),
+  referenciaTipo: text('referencia_tipo'),
+  referenciaId: integer('referencia_id'),
+  userId: text('user_id').notNull().references(() => user.id),
+  nota: text('nota'),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  index('movimiento_tienda_producto_fecha_idx').on(t.tiendaId, t.productoId, t.createdAt)
+])
+
+export const entradaInventario = pgTable('entrada_inventario', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  userId: text('user_id').notNull().references(() => user.id),
+  nota: text('nota'),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  index('entrada_tienda_fecha_idx').on(t.tiendaId, t.createdAt)
+])
+
+export const entradaInventarioDetalle = pgTable('entrada_inventario_detalle', {
+  entradaId: integer('entrada_id').notNull().references(() => entradaInventario.id, { onDelete: 'cascade' }),
+  productoId: integer('producto_id').notNull().references(() => producto.id),
+  cantidad: cantidad('cantidad').notNull()
+}, t => [
+  primaryKey({ columns: [t.entradaId, t.productoId] }),
+  check('entrada_detalle_cantidad_positiva', sql`${t.cantidad} > 0`)
+])
+
+// ==========================================
 // RELACIONES
 // ==========================================
 
@@ -138,4 +226,29 @@ export const sessionRelations = relations(session, ({ one }) => ({
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, { fields: [account.userId], references: [user.id] })
+}))
+
+export const categoriaRelations = relations(categoria, ({ many }) => ({
+  productos: many(producto)
+}))
+
+export const productoRelations = relations(producto, ({ one, many }) => ({
+  categoria: one(categoria, { fields: [producto.categoriaId], references: [categoria.id] }),
+  stock: many(stockTienda)
+}))
+
+export const stockTiendaRelations = relations(stockTienda, ({ one }) => ({
+  tienda: one(tienda, { fields: [stockTienda.tiendaId], references: [tienda.id] }),
+  producto: one(producto, { fields: [stockTienda.productoId], references: [producto.id] })
+}))
+
+export const entradaInventarioRelations = relations(entradaInventario, ({ one, many }) => ({
+  tienda: one(tienda, { fields: [entradaInventario.tiendaId], references: [tienda.id] }),
+  user: one(user, { fields: [entradaInventario.userId], references: [user.id] }),
+  detalle: many(entradaInventarioDetalle)
+}))
+
+export const entradaInventarioDetalleRelations = relations(entradaInventarioDetalle, ({ one }) => ({
+  entrada: one(entradaInventario, { fields: [entradaInventarioDetalle.entradaId], references: [entradaInventario.id] }),
+  producto: one(producto, { fields: [entradaInventarioDetalle.productoId], references: [producto.id] })
 }))

@@ -15,6 +15,20 @@ const items = computed<NavigationMenuItem[][]>(() => {
   return [
     general,
     [
+      { label: 'Productos', icon: 'i-lucide-package', to: '/productos' },
+      { label: 'Categorías', icon: 'i-lucide-tags', to: '/categorias' },
+      {
+        label: 'Inventario',
+        icon: 'i-lucide-warehouse',
+        defaultOpen: true,
+        children: [
+          { label: 'Entradas', to: '/inventario/entradas' },
+          { label: 'Ajustes', to: '/inventario/ajustes' },
+          { label: 'Kardex', to: '/inventario/kardex' }
+        ]
+      }
+    ],
+    [
       { label: 'Tiendas', icon: 'i-lucide-store', to: '/admin/tiendas' },
       { label: 'Usuarios', icon: 'i-lucide-users', to: '/admin/usuarios' }
     ]

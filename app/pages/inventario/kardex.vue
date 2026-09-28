@@ -1,0 +1,143 @@
+<script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
+import type { ProductoOpcion } from '~/components/ProductoPicker.vue'
+import { formatFechaHora } from '~/utils/fechas'
+
+definePageMeta({ admin: true })
+
+useSeoMeta({ title: 'Kardex' })
+
+const { tiendaId } = useTiendaSeleccionada()
+const producto = ref<ProductoOpcion | undefined>()
+const desde = ref('')
+const hasta = ref('')
+
+watch(tiendaId, () => {
+  producto.value = undefined
+})
+
+// Solo consulta cuando hay tienda y producto elegidos
+const { data: movimientos, status } = await useAsyncData(
+  'kardex',
+  () => tiendaId.value && producto.value
+    ? $fetch('/api/inventario/movimientos', {
+        query: {
+          tiendaId: tiendaId.value,
+          productoId: producto.value.id,
+          desde: desde.value || undefined,
+          hasta: hasta.value || undefined,
+          limit: 500
+        }
+      })
+    : Promise.resolve(null),
+  { watch: [tiendaId, producto, desde, hasta] }
+)
+
+type Movimiento = NonNullable<typeof movimientos.value>[number]
+
+const TIPO_LABEL: Record<Movimiento['tipo'], string> = {
+  entrada: 'Entrada',
+  venta: 'Venta',
+  anulacion_venta: 'Anulación de venta',
+  ajuste: 'Ajuste'
+}
+
+const columns: TableColumn<Movimiento>[] = [
+  { accessorKey: 'createdAt', header: 'Fecha' },
+  { accessorKey: 'tipo', header: 'Tipo' },
+  { accessorKey: 'cantidad', header: 'Cambio' },
+  { accessorKey: 'saldo', header: 'Saldo' },
+  { accessorKey: 'nota', header: 'Nota' },
+  { accessorKey: 'usuario', header: 'Usuario' }
+]
+</script>
+
+<template>
+  <UDashboardPanel id="kardex">
+    <template #header>
+      <PanelNavbar title="Kardex" />
+    </template>
+
+    <template #body>
+      <div class="flex flex-wrap items-end gap-2">
+        <TiendaFiltro />
+        <div class="w-80">
+          <ProductoPicker
+            v-model="producto"
+            :tienda-id="tiendaId"
+          />
+        </div>
+        <UFormField label="Desde">
+          <UInput
+            v-model="desde"
+            type="date"
+          />
+        </UFormField>
+        <UFormField label="Hasta">
+          <UInput
+            v-model="hasta"
+            type="date"
+          />
+        </UFormField>
+      </div>
+
+      <UEmpty
+        v-if="!producto"
+        icon="i-lucide-scroll-text"
+        title="Elige un producto"
+        description="El kardex muestra cada movimiento del producto en la tienda y el saldo después de cada uno."
+      />
+
+      <template v-else>
+        <div class="flex flex-wrap gap-4">
+          <UCard
+            variant="outline"
+            class="min-w-48"
+          >
+            <SectionLabel>Stock actual</SectionLabel>
+            <p
+              class="carbon-data-mono mt-2 text-2xl font-semibold"
+              :class="producto.stock < 0 ? 'text-error' : 'text-highlighted'"
+            >
+              {{ formatCantidad(producto.stock, producto.unidadMedida) }}
+              <span class="text-sm text-muted">{{ UNIDAD_ABREV[producto.unidadMedida] }}</span>
+            </p>
+          </UCard>
+        </div>
+
+        <UTable
+          :data="movimientos ?? []"
+          :columns="columns"
+          :loading="status === 'pending'"
+          empty="Sin movimientos en el periodo."
+          class="border border-default"
+        >
+          <template #createdAt-cell="{ row }">
+            <span class="carbon-data-mono">{{ formatFechaHora(row.original.createdAt) }}</span>
+          </template>
+          <template #tipo-cell="{ row }">
+            <UBadge
+              :label="TIPO_LABEL[row.original.tipo]"
+              color="neutral"
+              variant="outline"
+            />
+          </template>
+          <template #cantidad-cell="{ row }">
+            <span
+              class="carbon-data-mono"
+              :class="row.original.cantidad < 0 ? 'text-error' : 'text-success'"
+            >
+              {{ row.original.cantidad > 0 ? '+' : '' }}{{ formatCantidad(row.original.cantidad, row.original.unidadMedida) }}
+            </span>
+          </template>
+          <template #saldo-cell="{ row }">
+            <span class="carbon-data-mono">{{ formatCantidad(row.original.saldo, row.original.unidadMedida) }}</span>
+          </template>
+          <template #nota-cell="{ row }">
+            <span class="text-muted">{{ row.original.nota || '—' }}</span>
+          </template>
+        </UTable>
+      </template>
+    </template>
+  </UDashboardPanel>
+</template>

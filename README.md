@@ -52,6 +52,7 @@ Sistema POS para tiendas: un solo proyecto Nuxt 4 (interfaz + API en Nitro), con
 | `pnpm build` | Build de producción |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | Verificación de tipos |
+| `pnpm test` | Pruebas unitarias (Vitest) |
 | `pnpm db:generate` | Genera una migración a partir de `server/db/schema.ts` |
 | `pnpm db:migrate` | Aplica las migraciones pendientes |
 | `pnpm db:seed` | Crea tiendas por nombre (idempotente) |
