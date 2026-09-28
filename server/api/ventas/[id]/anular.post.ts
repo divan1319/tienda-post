@@ -9,8 +9,8 @@ const bodySchema = z.object({
 // Anula la venta (no se borra), devuelve el stock y escribe movimientos anulacion_venta.
 export default defineEventHandler(async (event) => {
   const session = await requireAdmin(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(bodySchema))
   const db = useDb()
 
   await db.transaction(async (tx) => {

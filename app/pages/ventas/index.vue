@@ -2,7 +2,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { VentaTicket } from '#shared/types/ventas'
 import { getErrorMessage } from '~/utils/errors'
-import { formatFechaHora, hoyLocal } from '~/utils/fechas'
+import { formatFechaHora } from '~/utils/fechas'
 
 useSeoMeta({ title: 'Ventas' })
 

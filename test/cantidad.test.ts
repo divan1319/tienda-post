@@ -73,3 +73,13 @@ describe('dinero', () => {
     expect(formatUSD(1234)).toBe('$12.34')
   })
 })
+
+describe('esFechaValida', () => {
+  it('acepta fechas reales y rechaza las inexistentes', async () => {
+    const { esFechaValida } = await import('../shared/utils/fechas')
+    expect(esFechaValida('2026-09-28')).toBe(true)
+    expect(esFechaValida('2024-02-29')).toBe(true)
+    expect(esFechaValida('2026-02-30')).toBe(false)
+    expect(esFechaValida('2026-9-28')).toBe(false)
+  })
+})

@@ -19,8 +19,3 @@ export function formatFechaHora(valor: string | Date): string {
   )
   return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`
 }
-
-/** Fecha de hoy en El Salvador como `YYYY-MM-DD`. */
-export function hoyLocal(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA }).format(new Date())
-}

@@ -10,9 +10,11 @@ import {
   index,
   primaryKey,
   check,
-  uniqueIndex
+  uniqueIndex,
+  date
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { UNIDADES_MEDIDA } from '../../shared/utils/cantidad'
 import { METODOS_PAGO } from '../../shared/utils/ventas'
 
@@ -234,6 +236,8 @@ export const salidaCaja = pgTable('salida_caja', {
   userId: text('user_id').notNull().references(() => user.id),
   montoCentavos: integer('monto_centavos').notNull(),
   motivo: text('motivo').notNull(),
+  // Cuando la salida paga una compra; una compra tiene como máximo una salida
+  compraId: integer('compra_id').unique().references((): AnyPgColumn => compra.id),
   createdAt: timestamptz('created_at').notNull().defaultNow()
 }, t => [
   index('salida_caja_turno_id_idx').on(t.turnoId),
@@ -283,6 +287,52 @@ export const ventaDetalle = pgTable('venta_detalle', {
 }, t => [
   primaryKey({ columns: [t.ventaId, t.productoId] }),
   check('venta_detalle_cantidad_positiva', sql`${t.cantidad} > 0`)
+])
+
+// ==========================================
+// PEDIDOS Y COMPRAS
+// ==========================================
+
+export const estadoPedido = pgEnum('estado_pedido', ['pendiente', 'recibido', 'cancelado'])
+
+// Recordatorio sin monto; el dinero se registra en la compra
+export const pedido = pgTable('pedido', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  nombre: text('nombre').notNull(),
+  proveedor: text('proveedor'),
+  // Fecha local (El Salvador)
+  fechaEsperada: date('fecha_esperada', { mode: 'string' }).notNull(),
+  estado: estadoPedido('estado').notNull().default('pendiente'),
+  nota: text('nota'),
+  userId: text('user_id').notNull().references(() => user.id),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  index('pedido_estado_fecha_idx').on(t.estado, t.fechaEsperada),
+  index('pedido_tienda_idx').on(t.tiendaId)
+])
+
+export const tipoCompra = pgEnum('tipo_compra', ['pedido', 'directa'])
+
+export const compra = pgTable('compra', {
+  id: serial('id').primaryKey(),
+  tiendaId: integer('tienda_id').notNull().references(() => tienda.id),
+  tipo: tipoCompra('tipo').notNull(),
+  // Un pedido se recibe una sola vez
+  pedidoId: integer('pedido_id').unique().references(() => pedido.id),
+  nombre: text('nombre').notNull(),
+  proveedor: text('proveedor'),
+  totalCentavos: integer('total_centavos').notNull(),
+  numeroFactura: text('numero_factura'),
+  comprobanteKey: text('comprobante_key'),
+  // Fecha local de la compra (hoy por defecto, editable por el admin)
+  fechaCompra: date('fecha_compra', { mode: 'string' }).notNull(),
+  userId: text('user_id').notNull().references(() => user.id),
+  createdAt: timestamptz('created_at').notNull().defaultNow()
+}, t => [
+  check('compra_tipo_pedido', sql`(${t.tipo} = 'pedido' AND ${t.pedidoId} IS NOT NULL) OR (${t.tipo} = 'directa' AND ${t.pedidoId} IS NULL)`),
+  check('compra_total_positivo', sql`${t.totalCentavos} > 0`),
+  index('compra_tienda_fecha_idx').on(t.tiendaId, t.fechaCompra)
 ])
 
 // ==========================================

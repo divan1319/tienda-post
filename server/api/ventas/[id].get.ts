@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
 
   const v = await obtenerVenta(useDb(), id)
   // La vendedora solo ve sus propias ventas

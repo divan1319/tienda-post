@@ -4,7 +4,7 @@ import { tienda, turnoCaja, user } from '~~/server/db/schema'
 // Detalle de un turno con su resumen (para verlo o imprimir el corte).
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
   const db = useDb()
 
   const [fila] = await db

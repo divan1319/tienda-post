@@ -10,8 +10,8 @@ const bodySchema = z.object({
 // Cierra el turno propio: calcula el esperado, guarda contado y diferencia.
 export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
-  const { id } = await getValidatedRouterParams(event, idParamSchema.parse)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const { id } = await getValidatedRouterParams(event, validar(idParamSchema))
+  const body = await readValidatedBody(event, validar(bodySchema))
 
   return useDb().transaction(async (tx) => {
     // Con el turno bloqueado, ninguna venta o salida puede entrar mientras se calcula

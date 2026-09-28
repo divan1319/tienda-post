@@ -80,6 +80,8 @@ interface NuevaSalida {
   userId: string
   montoCentavos: number
   motivo: string
+  /** Compra que paga la salida: su monto debe ser igual al total de la compra */
+  compra?: { id: number, totalCentavos: number }
 }
 
 /**
@@ -99,6 +101,10 @@ export async function registrarSalida(tx: Tx, s: NuevaSalida) {
     throw createError({ statusCode: 409, statusMessage: 'El turno ya está cerrado.' })
   }
 
+  if (s.compra && s.montoCentavos !== s.compra.totalCentavos) {
+    throw createError({ statusCode: 400, statusMessage: 'El monto de la salida debe ser igual al total de la compra.' })
+  }
+
   const { efectivoEsperadoCentavos } = await resumenTurno(tx, turno)
   const error = validarMontoSalida(s.montoCentavos, efectivoEsperadoCentavos)
   if (error) {
@@ -112,7 +118,8 @@ export async function registrarSalida(tx: Tx, s: NuevaSalida) {
       tiendaId: s.tiendaId,
       userId: s.userId,
       montoCentavos: s.montoCentavos,
-      motivo: s.motivo
+      motivo: s.motivo,
+      compraId: s.compra?.id ?? null
     })
     .returning()
 

@@ -18,6 +18,8 @@ const items = computed<NavigationMenuItem[][]>(() => {
   return [
     general,
     [
+      { label: 'Pedidos', icon: 'i-lucide-clipboard-list', to: '/pedidos' },
+      { label: 'Compras', icon: 'i-lucide-shopping-bag', to: '/compras' },
       { label: 'Productos', icon: 'i-lucide-package', to: '/productos' },
       { label: 'Categorías', icon: 'i-lucide-tags', to: '/categorias' },
       {

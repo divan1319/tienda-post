@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const ZONA_HORARIA = 'America/El_Salvador'
 
 /** Fecha local `YYYY-MM-DD` (se interpreta en la zona horaria de El Salvador). */
-export const fechaSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)')
+export const fechaSchema = z.string().refine(esFechaValida, 'Fecha inválida (YYYY-MM-DD)')
 
 /** columna >= inicio del día `desde` en hora local */
 export function desdeFechaLocal(columna: AnyColumn | SQL, desde: string): SQL {

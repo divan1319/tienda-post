@@ -16,7 +16,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const { session, tiendaId } = await requireTienda(event)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const body = await readValidatedBody(event, validar(bodySchema))
   const db = useDb()
 
   const ventaId = await db.transaction(async (tx) => {

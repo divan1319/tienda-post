@@ -8,7 +8,7 @@ const bodySchema = z.object({
 // Abre un turno de caja en la tienda activa con el efectivo inicial.
 export default defineEventHandler(async (event) => {
   const { session, tiendaId } = await requireTienda(event)
-  const body = await readValidatedBody(event, bodySchema.parse)
+  const body = await readValidatedBody(event, validar(bodySchema))
 
   try {
     const [turno] = await useDb()

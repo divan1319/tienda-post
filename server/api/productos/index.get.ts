@@ -13,7 +13,7 @@ const querySchema = paginacionSchema.extend({
 
 // Búsqueda por nombre, código o categoría, con el stock de la tienda.
 export default defineEventHandler(async (event) => {
-  const query = await getValidatedQuery(event, querySchema.parse)
+  const query = await getValidatedQuery(event, validar(querySchema))
   const { session, tiendaId } = await requireTienda(event, { tiendaId: query.tiendaId })
   const db = useDb()
 
