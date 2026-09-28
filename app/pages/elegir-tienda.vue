@@ -38,6 +38,7 @@ async function continuar() {
 async function cerrarSesion() {
   await authClient.signOut()
   limpiar()
+  useUsuario().usuario.value = null
   await navigateTo('/login')
 }
 </script>

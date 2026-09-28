@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { authClient } from '~/utils/auth-client'
-
 useSeoMeta({ title: 'Panel' })
 
-const session = authClient.useSession()
+const { usuario, esAdmin } = useUsuario()
 const { estado, tiendaActiva } = useTiendaActiva()
-
-const esAdmin = computed(() => session.value.data?.user.role === 'admin')
 </script>
 
 <template>
@@ -33,7 +29,7 @@ const esAdmin = computed(() => session.value.data?.user.role === 'admin')
         <UCard variant="outline">
           <SectionLabel>Usuario</SectionLabel>
           <p class="mt-2 text-lg font-semibold text-highlighted">
-            {{ session.data?.user.name }}
+            {{ usuario?.name }}
           </p>
           <UBadge
             :label="esAdmin ? 'Admin' : 'Vendedora'"

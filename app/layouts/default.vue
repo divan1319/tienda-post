@@ -2,10 +2,8 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 import { authClient } from '~/utils/auth-client'
 
-const session = authClient.useSession()
+const { usuario, esAdmin } = useUsuario()
 const { limpiar } = useTiendaActiva()
-
-const esAdmin = computed(() => session.value.data?.user.role === 'admin')
 
 const items = computed<NavigationMenuItem[][]>(() => {
   const general: NavigationMenuItem[] = [
@@ -26,6 +24,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 async function cerrarSesion() {
   await authClient.signOut()
   limpiar()
+  usuario.value = null
   await navigateTo('/login')
 }
 </script>
@@ -51,14 +50,14 @@ async function cerrarSesion() {
       <template #footer="{ collapsed }">
         <div class="flex w-full flex-col gap-2">
           <div
-            v-if="!collapsed && session.data"
+            v-if="!collapsed && usuario"
             class="min-w-0 px-2"
           >
             <p class="truncate text-sm font-medium text-highlighted">
-              {{ session.data.user.name }}
+              {{ usuario.name }}
             </p>
             <p class="truncate text-xs text-muted">
-              {{ session.data.user.email }}
+              {{ usuario.email }}
             </p>
           </div>
           <UButton

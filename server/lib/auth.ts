@@ -40,7 +40,8 @@ export function createAuth(db: Db, { secret, baseURL }: AuthConfig) {
         ac,
         roles,
         defaultRole: 'vendedora',
-        adminRoles: ['admin']
+        adminRoles: ['admin'],
+        bannedUserMessage: 'Tu cuenta está desactivada. Contacta al administrador.'
       })
     ],
     secret,

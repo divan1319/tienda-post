@@ -25,7 +25,8 @@ const columns: TableColumn<Tienda>[] = [
   { accessorKey: 'nombre', header: 'Nombre' },
   { accessorKey: 'direccion', header: 'Dirección' },
   { accessorKey: 'activa', header: 'Estado' },
-  { id: 'acciones', header: '' }
+  // Sin `header`: un string vacío provoca un desajuste de hidratación en UTable
+  { id: 'acciones' }
 ]
 
 const schema = z.object({

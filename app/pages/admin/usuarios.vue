@@ -26,7 +26,7 @@ interface Tienda {
 }
 
 const toast = useToast()
-const session = authClient.useSession()
+const { usuario: yo } = useUsuario()
 
 const [{ data: usuarios, status, refresh }, { data: tiendas }] = await Promise.all([
   useFetch<Usuario[]>('/api/admin/usuarios', { default: () => [] }),
@@ -52,11 +52,12 @@ const columns: TableColumn<Usuario>[] = [
   { accessorKey: 'role', header: 'Rol' },
   { accessorKey: 'tiendaIds', header: 'Tiendas' },
   { accessorKey: 'banned', header: 'Estado' },
-  { id: 'acciones', header: '' }
+  // Sin `header`: un string vacío provoca un desajuste de hidratación en UTable
+  { id: 'acciones' }
 ]
 
 function esYo(u: Usuario) {
-  return u.id === session.value.data?.user.id
+  return u.id === yo.value?.id
 }
 
 function falla(error: { message?: string } | null, fallback: string): never {
