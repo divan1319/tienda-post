@@ -1,0 +1,44 @@
+{
+  "name": "tienda-post",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx server/db/seed.ts",
+    "auth:create-admin": "tsx scripts/create-admin.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3",
+    "@aws-sdk/s3-request-presigner": "^3",
+    "@better-auth/drizzle-adapter": "^1.7.6",
+    "@iconify-json/lucide": "^1.2.134",
+    "@internationalized/date": "^3.12.4",
+    "@neondatabase/serverless": "^1.1.0",
+    "@nuxt/ui": "^4.11.1",
+    "better-auth": "^1.7.6",
+    "drizzle-orm": "^0.45.3",
+    "nuxt": "^4.5.2",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@types/node": "^26.6.2",
+    "dotenv": "^18.0.3",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^10.11.0",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^4",
+    "vue-tsc": "^3.3.11"
+  }
+}
