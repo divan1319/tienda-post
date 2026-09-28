@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Carbon Design System - Sharp corners (~2px) */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+
+  /* Carbon Blue Palette (IBM Blue 60: #0f62fe) */
+  --color-blue-50: #edf5ff;
+  --color-blue-100: #d0e2ff;
+  --color-blue-200: #a6c8ff;
+  --color-blue-300: #78a9ff;
+  --color-blue-400: #4589ff;
+  --color-blue-500: #0f62fe;
+  --color-blue-600: #0043ce;
+  --color-blue-700: #002d9c;
+  --color-blue-800: #001d6c;
+  --color-blue-900: #001141;
+  --color-blue-950: #00072b;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Carbon dense mono details for code, coordinates and statistics */
+.carbon-data-mono {
+  font-family: var(--font-mono);
+}
+
+/* Page & Layout Transitions */
+.page-enter-active,
+.page-leave-active,
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.page-enter-from,
+.layout-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.page-leave-to,
+.layout-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .layout-enter-active,
+  .layout-leave-active {
+    transition: none !important;
+  }
+  .page-enter-from,
+  .page-leave-to,
+  .layout-enter-from,
+  .layout-leave-to {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
