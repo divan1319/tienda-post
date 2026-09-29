@@ -1,5 +1,5 @@
 import type { Aleatorio } from './aleatorio'
-import { GASTOS_MENORES, MOTIVOS_ANULACION, PANADERIA, PRODUCTOS, PROVEEDORES, TIENDAS, vendedoraDelDia, type ClaveTienda, type ClaveUsuario, type Grupo } from './datos'
+import { FALTANTES, GASTOS_MENORES, MOTIVOS_ANULACION, PANADERIA, PRODUCTOS, PROVEEDORES, TIENDAS, vendedoraDelDia, type ClaveTienda, type ClaveUsuario, type Grupo } from './datos'
 import type { Libro } from './libro'
 import { ahoraLocal, diaSemana, hora, instante, sumarDias } from './tiempo'
 import type { MetodoPago } from '../../../shared/utils/ventas'
@@ -110,15 +110,18 @@ export function simularOperaciones(ctx: Contexto) {
         if (!ocurrio(fecha, hora(8, 30))) continue
 
         const lineas = indicesDelGrupo(grupo)
-          // En Norte, la bebida energizante no se repone en las últimas dos semanas:
-          // queda en negativo y aparece en «Stock por corregir»
-          .filter(i => !(t.clave === 'norte' && PRODUCTOS[i]!.nombre === 'Bebida energizante' && fecha > sumarDias(hoy, -14)))
+          // Faltantes de proveedor: no se reponen en las últimas dos semanas
+          .filter(i => !(fecha > sumarDias(hoy, -14) && FALTANTES.some(f => f.tienda === t.clave && f.producto === PRODUCTOS[i]!.nombre)))
           .map(i => ({
             productoId: productoIds[i]!,
             cantidad: redondear(PRODUCTOS[i]!.objetivo * t.escalaStock - libro.stock(tiendaId, productoIds[i]!), PRODUCTOS[i]!.unidad)
           }))
           .filter(l => l.cantidad > 0)
-        if (!lineas.length) continue
+        if (!lineas.length) {
+          // No hizo falta reabastecer: el pedido no se llegó a hacer
+          libro.pedidos.pop()
+          continue
+        }
 
         const at = instante(fecha, hora(8, 15))
         const total = lineas.reduce((s, l) => s + Math.round(l.cantidad * costo(libro.producto(l.productoId).precio)), 0)
@@ -177,6 +180,14 @@ export function simularOperaciones(ctx: Contexto) {
         if (ventaId && rnd.probabilidad(0.015) && minAnula < CIERRE && ocurrio(fecha, minAnula)) {
           libro.anular(ventaId, admin, instante(fecha, minAnula), rnd.elegir(MOTIVOS_ANULACION))
         }
+      }
+
+      // ----- Venta grande de un producto en faltante (16:00): queda en negativo -----
+      for (const f of FALTANTES) {
+        if (f.tienda !== t.clave || fecha !== sumarDias(hoy, -f.diasAtras) || !ocurrio(fecha, hora(16))) continue
+        const idx = PRODUCTOS.findIndex(p => p.nombre === f.producto)
+        const cantidad = Math.max(0, Math.floor(libro.stock(tiendaId, productoIds[idx]!))) + 3
+        libro.venta(tiendaId, instante(fecha, hora(16)), [{ productoId: productoIds[idx]!, cantidad }], 'efectivo', total => montoRecibido(rnd, total))
       }
 
       // ----- Conteo físico cada dos semanas (18:00): ajusta dos productos -----

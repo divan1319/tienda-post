@@ -4,7 +4,7 @@ import type { Db } from '../index'
 import * as s from '../schema'
 import type { Auth } from '../../lib/auth'
 import { Aleatorio } from './aleatorio'
-import { CATEGORIAS, CONTRASENA_DEMO, PRODUCTOS, TIENDAS, USUARIOS, codigoInterno, type ClaveTienda, type ClaveUsuario } from './datos'
+import { CATEGORIAS, CONTRASENA_DEMO, MINIMOS_ALTOS, PRODUCTOS, TIENDAS, USUARIOS, codigoInterno, type ClaveTienda, type ClaveUsuario } from './datos'
 import { Libro } from './libro'
 import { simularOperaciones } from './operaciones'
 
@@ -88,6 +88,13 @@ export async function sembrarDemo(db: Db, auth: Auth, opciones: OpcionesDemo = {
       const minimo = p.unidad === 'unidad' ? Math.round(p.minimo * t.escalaStock) : Math.round(p.minimo * t.escalaStock * 2) / 2
       minimos.set(`${tiendaIds[t.clave]}:${productoIds[i]}`, minimo)
     })
+    // Mínimo más exigente que el stock actual: estos productos aparecen en «Stock bajo»
+    for (const nombre of MINIMOS_ALTOS[t.clave]) {
+      const i = PRODUCTOS.findIndex(p => p.nombre === nombre)
+      const actual = libro.stock(tiendaIds[t.clave], productoIds[i]!)
+      const minimo = PRODUCTOS[i]!.unidad === 'unidad' ? Math.ceil(actual * 1.25) + 2 : Math.ceil(actual * 1.25 * 2) / 2 + 1
+      minimos.set(`${tiendaIds[t.clave]}:${productoIds[i]}`, minimo)
+    }
   }
 
   // ---------- Guardado ----------

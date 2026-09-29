@@ -117,6 +117,21 @@ export const PROVEEDORES: Record<Exclude<Grupo, 'pan'>, { proveedor: string, ped
 
 export const PANADERIA = 'Panadería San Miguel'
 
+/**
+ * Faltantes de proveedor: no se reponen en las últimas dos semanas y una venta grande,
+ * `diasAtras` días antes de hoy, los deja en negativo («Stock por corregir»).
+ */
+export const FALTANTES: { tienda: ClaveTienda, producto: string, diasAtras: number }[] = [
+  { tienda: 'norte', producto: 'Bebida energizante', diasAtras: 2 },
+  { tienda: 'centro', producto: 'Café molido 200 g', diasAtras: 1 }
+]
+
+/** Productos con un stock mínimo más exigente que su stock actual («Stock bajo»). */
+export const MINIMOS_ALTOS: Record<ClaveTienda, string[]> = {
+  centro: ['Leche entera 1 L', 'Jabón de lavar en barra', 'Galletas de vainilla'],
+  norte: ['Arroz blanco', 'Papel higiénico 4 rollos', 'Huevo']
+}
+
 /** Código EAN-13 del rango 200–299, reservado para uso interno (no choca con productos reales). */
 export function codigoInterno(n: number): string {
   const base = `2000${String(n).padStart(8, '0')}`
