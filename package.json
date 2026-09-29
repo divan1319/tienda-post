@@ -12,7 +12,9 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:fresh": "tsx scripts/db-fresh.ts",
     "db:seed": "tsx server/db/seed.ts",
+    "db:seed:demo": "tsx scripts/seed-demo.ts",
     "auth:create-admin": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
