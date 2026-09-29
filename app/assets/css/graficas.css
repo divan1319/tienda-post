@@ -1,0 +1,49 @@
+/*
+ * Gráficas (@unovis/vue) con la paleta Carbon del proyecto.
+ *
+ * Categórica de dos series, validada con el validador de la guía de dataviz
+ * (bandas de luminosidad, croma, separación bajo daltonismo y contraste):
+ *   claro  (#ffffff): #0f62fe blue 60 · #9f1853 magenta 70 → CVD ΔE 26.9, normal 33.3
+ *   oscuro (#18181b): #4589ff blue 50 · #d02670 magenta 60 → CVD ΔE 22.6, normal 31.5
+ * Orden fijo: la serie 1 siempre es azul (ventas / serie principal).
+ *
+ * Unovis inyecta en tiempo de ejecución `:root { --vis-… }` con sus valores y solo
+ * reconoce su propia clase de modo oscuro (`theme-dark`), no `.dark` de Nuxt: por eso
+ * se usa `html:root` (más específico) para que ganen los tokens de la app en ambos modos.
+ */
+html:root {
+  --serie-1: #0f62fe;
+  --serie-2: #9f1853;
+
+  --vis-font-family: var(--font-sans);
+  --vis-axis-grid-color: var(--ui-border);
+  --vis-axis-grid-line-dasharray: none;
+  --vis-axis-grid-line-width: 1px;
+  --vis-axis-domain-color: var(--ui-border-accented);
+  --vis-axis-tick-color: var(--ui-border-accented);
+  --vis-axis-tick-label-color: var(--ui-text-muted);
+  --vis-axis-label-color: var(--ui-text-muted);
+  --vis-axis-tick-label-font-size: 11px;
+
+  /* Espacio de 2 px en el color de la superficie entre segmentos apilados */
+  --vis-stacked-bar-stroke-color: var(--ui-bg);
+  --vis-stacked-bar-stroke-width: 2px;
+  --vis-stacked-bar-hover-stroke-color: var(--ui-text-highlighted);
+  --vis-grouped-bar-hover-stroke-color: var(--ui-text-highlighted);
+
+  /* Tooltip plano, bordes de 2 px, sin sombra (estilo Carbon) */
+  --vis-tooltip-background-color: var(--ui-bg);
+  --vis-tooltip-border-color: var(--ui-border-accented);
+  --vis-tooltip-text-color: var(--ui-text);
+  --vis-tooltip-shadow-color: transparent;
+  --vis-tooltip-box-shadow: none;
+  --vis-tooltip-border-radius: 2px;
+  --vis-tooltip-padding: 8px 10px;
+
+  --vis-legend-label-font-size: 12px;
+}
+
+html.dark:root {
+  --serie-1: #4589ff;
+  --serie-2: #d02670;
+}
