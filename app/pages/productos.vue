@@ -18,7 +18,18 @@ const q = useDebounced(busqueda)
 const categoriaFiltro = ref<string>('todas')
 const pagina = ref(1)
 
-watch([q, categoriaFiltro, tiendaId], () => {
+// Filtro de alertas; el panel enlaza a /productos?alerta=bajo|negativo
+const route = useRoute()
+const alertaInicial = route.query.alerta
+const alertaFiltro = ref<string>(typeof alertaInicial === 'string' && ['bajo', 'negativo', 'alerta'].includes(alertaInicial) ? alertaInicial : 'todos')
+const alertaItems = [
+  { label: 'Todo el stock', value: 'todos' },
+  { label: 'Con alerta', value: 'alerta' },
+  { label: 'Stock bajo', value: 'bajo' },
+  { label: 'Por corregir (negativo)', value: 'negativo' }
+]
+
+watch([q, categoriaFiltro, alertaFiltro, tiendaId], () => {
   pagina.value = 1
 })
 
@@ -32,6 +43,7 @@ const { data, status, refresh } = await useFetch('/api/productos', {
     tiendaId: tiendaId.value,
     q: q.value || undefined,
     categoriaId: categoriaFiltro.value === 'todas' ? undefined : categoriaFiltro.value,
+    alerta: alertaFiltro.value === 'todos' ? undefined : alertaFiltro.value,
     incluirInactivos: 'true',
     limit: POR_PAGINA,
     offset: (pagina.value - 1) * POR_PAGINA
@@ -92,6 +104,43 @@ function abrir(p?: Producto) {
   abierto.value = true
 }
 
+// ---------- Stock mínimo (por tienda) ----------
+
+const minimoDe = ref<Producto | null>(null)
+const minimo = ref<number | undefined>()
+const guardandoMinimo = ref(false)
+const errorMinimo = computed(() =>
+  minimoDe.value && minimo.value !== undefined
+    ? validarCantidad(minimo.value, minimoDe.value.unidadMedida, { permitirCero: true })
+    : null
+)
+
+function abrirMinimo(p: Producto) {
+  minimoDe.value = p
+  minimo.value = p.stockMinimo ?? undefined
+}
+
+async function guardarMinimo(valor: number | null) {
+  if (!minimoDe.value || !tiendaId.value) return
+  guardandoMinimo.value = true
+  try {
+    await $fetch('/api/inventario/stock-minimo', {
+      method: 'PUT',
+      body: { tiendaId: tiendaId.value, productoId: minimoDe.value.id, stockMinimo: valor }
+    })
+    toast.add({ title: valor === null ? 'Stock mínimo quitado' : 'Stock mínimo guardado', color: 'success' })
+    minimoDe.value = null
+    await refresh()
+  } catch (err) {
+    toast.add({ title: getErrorMessage(err, 'No se pudo guardar el stock mínimo'), color: 'error' })
+  } finally {
+    guardandoMinimo.value = false
+  }
+}
+
+const { items: tiendaItemsMinimo } = useTiendaSeleccionada()
+const nombreTienda = computed(() => tiendaItemsMinimo.value.find(t => t.value === tiendaId.value)?.label ?? '')
+
 async function guardar(event: FormSubmitEvent<Schema>) {
   const { precio, ...datos } = event.data
   const body = {
@@ -147,8 +196,23 @@ async function guardar(event: FormSubmitEvent<Schema>) {
           :items="categoriaItems"
           class="w-52"
         />
+        <USelect
+          v-model="alertaFiltro"
+          :items="alertaItems"
+          class="w-52"
+        />
         <TiendaFiltro />
-        <div class="ms-auto">
+        <div class="ms-auto flex gap-2">
+          <UButton
+            v-if="tiendaId"
+            :to="urlExportacion('/api/productos/exportar', { tiendaId })"
+            external
+            download
+            label="Exportar stock"
+            icon="i-lucide-download"
+            color="neutral"
+            variant="outline"
+          />
           <UButton
             label="Nuevo producto"
             icon="i-lucide-plus"
@@ -226,6 +290,12 @@ async function guardar(event: FormSubmitEvent<Schema>) {
             variant="subtle"
             class="ms-2"
           />
+          <p
+            v-if="row.original.stockMinimo !== null"
+            class="carbon-data-mono text-xs text-muted"
+          >
+            mín. {{ formatCantidad(row.original.stockMinimo, row.original.unidadMedida) }}
+          </p>
         </template>
         <template #activo-cell="{ row }">
           <UBadge
@@ -236,6 +306,13 @@ async function guardar(event: FormSubmitEvent<Schema>) {
         </template>
         <template #acciones-cell="{ row }">
           <div class="flex justify-end">
+            <UButton
+              icon="i-lucide-bell"
+              color="neutral"
+              variant="ghost"
+              aria-label="Stock mínimo"
+              @click="abrirMinimo(row.original)"
+            />
             <UButton
               icon="i-lucide-pencil"
               color="neutral"
@@ -257,6 +334,65 @@ async function guardar(event: FormSubmitEvent<Schema>) {
           :items-per-page="POR_PAGINA"
         />
       </div>
+
+      <UModal
+        :open="!!minimoDe"
+        title="Stock mínimo"
+        :description="minimoDe ? `${minimoDe.nombre} en ${nombreTienda}. Cuando el stock llegue a este valor, se marca como stock bajo.` : undefined"
+        @update:open="(v) => { if (!v) minimoDe = null }"
+      >
+        <template #body>
+          <form
+            v-if="minimoDe"
+            id="form-minimo"
+            class="space-y-3"
+            @submit.prevent="minimo !== undefined && !errorMinimo && guardarMinimo(minimo)"
+          >
+            <p class="carbon-data-mono text-sm">
+              <span class="text-muted">Stock actual:</span>
+              {{ formatCantidad(minimoDe.stock, minimoDe.unidadMedida) }} {{ UNIDAD_ABREV[minimoDe.unidadMedida] }}
+            </p>
+            <UFormField
+              :label="`Mínimo (${UNIDAD_ABREV[minimoDe.unidadMedida]})`"
+              :error="errorMinimo ?? undefined"
+            >
+              <CantidadInput
+                v-model="minimo"
+                :unidad="minimoDe.unidadMedida"
+                permitir-cero
+                class="w-40"
+              />
+            </UFormField>
+          </form>
+        </template>
+        <template #footer>
+          <div class="flex w-full justify-between gap-2">
+            <UButton
+              label="Quitar mínimo"
+              color="neutral"
+              variant="ghost"
+              :disabled="minimoDe?.stockMinimo === null"
+              :loading="guardandoMinimo"
+              @click="guardarMinimo(null)"
+            />
+            <div class="flex gap-2">
+              <UButton
+                label="Cancelar"
+                color="neutral"
+                variant="outline"
+                @click="minimoDe = null"
+              />
+              <UButton
+                type="submit"
+                form="form-minimo"
+                label="Guardar"
+                :loading="guardandoMinimo"
+                :disabled="minimo === undefined || !!errorMinimo"
+              />
+            </div>
+          </div>
+        </template>
+      </UModal>
 
       <UModal
         v-model:open="abierto"

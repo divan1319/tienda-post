@@ -1,26 +1,13 @@
-import { z } from 'zod'
-import { and, count, desc, eq, gte, lte, sql } from 'drizzle-orm'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
 import { compra, salidaCaja, tienda, user } from '~~/server/db/schema'
 
-const querySchema = paginacionSchema.extend({
-  tiendaId: queryId,
-  tipo: z.enum(['pedido', 'directa']).optional(),
-  desde: fechaSchema.optional(),
-  hasta: fechaSchema.optional()
-})
+const querySchema = paginacionSchema.merge(comprasFiltrosSchema)
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const query = await getValidatedQuery(event, validar(querySchema))
+  const { sinTipo: base, where } = condicionesCompras(query)
   const db = useDb()
-
-  // fecha_compra es una fecha local: se compara directo con desde/hasta
-  const base = [
-    query.tiendaId ? eq(compra.tiendaId, query.tiendaId) : undefined,
-    query.desde ? gte(compra.fechaCompra, query.desde) : undefined,
-    query.hasta ? lte(compra.fechaCompra, query.hasta) : undefined
-  ]
-  const where = and(...base, query.tipo ? eq(compra.tipo, query.tipo) : undefined)
 
   const suma = (condicion: ReturnType<typeof sql>) =>
     sql<number>`coalesce(sum(${compra.totalCentavos}) filter (where ${condicion}), 0)`.mapWith(Number)

@@ -10,6 +10,18 @@ const { data, status, error } = useFetch('/api/reportes/ventas', { query: consul
 const etiquetas = computed(() => (data.value?.serie ?? []).map(p => formatPeriodo(p.periodo, data.value!.periodo)))
 const maxProducto = computed(() => Math.max(1, ...(data.value?.topProductos ?? []).map(p => p.totalCentavos)))
 
+const sufijo = computed(() => `${filtros.value.tiendaId ? `tienda-${filtros.value.tiendaId}` : 'todas'}_${filtros.value.desde}_${filtros.value.hasta}`)
+
+function exportarTop() {
+  if (!data.value) return
+  descargarCsv(nombreArchivoCsv('productos-mas-vendidos', sufijo.value), generarCsv(data.value.topProductos, [
+    { titulo: 'Producto', valor: p => p.nombre },
+    { titulo: 'Unidad', valor: p => p.unidadMedida },
+    { titulo: 'Cantidad', valor: p => p.cantidad },
+    { titulo: 'Total', valor: p => centavosCsv(p.totalCentavos) }
+  ]))
+}
+
 function porcentaje(parte: number, total: number) {
   return total ? `${Math.round((parte / total) * 100)} % del total` : '—'
 }
@@ -58,6 +70,7 @@ function porcentaje(parte: number, total: number) {
 
       <GraficaCard
         titulo="Ventas por periodo"
+        :archivo="`ventas-por-periodo_${sufijo}`"
         :datos="data.serie"
         :etiquetas="etiquetas"
         :series="[{ clave: 'totalCentavos', nombre: 'Total vendido', color: 'var(--serie-1)' }]"
@@ -67,7 +80,18 @@ function porcentaje(parte: number, total: number) {
       <div class="grid gap-4 xl:grid-cols-2">
         <UCard variant="outline">
           <template #header>
-            <SectionLabel>Productos más vendidos</SectionLabel>
+            <div class="flex items-center justify-between">
+              <SectionLabel>Productos más vendidos</SectionLabel>
+              <UButton
+                v-if="data.topProductos.length"
+                label="CSV"
+                icon="i-lucide-download"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                @click="exportarTop"
+              />
+            </div>
           </template>
           <UEmpty
             v-if="!data.topProductos.length"

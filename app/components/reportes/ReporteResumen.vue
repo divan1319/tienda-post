@@ -7,6 +7,18 @@ const filtros = toRef(props, 'filtros')
 
 const { data, status, error } = useFetch('/api/reportes/resumen', { query: consultaReporte(filtros), lazy: true })
 
+const sufijo = computed(() => `${filtros.value.tiendaId ? `tienda-${filtros.value.tiendaId}` : 'todas'}_${filtros.value.desde}_${filtros.value.hasta}`)
+
+function exportarTiendas() {
+  if (!data.value) return
+  descargarCsv(nombreArchivoCsv('resumen-por-tienda', sufijo.value), generarCsv(data.value.porTienda, [
+    { titulo: 'Tienda', valor: t => t.nombre },
+    { titulo: 'Ventas', valor: t => centavosCsv(t.ventasCentavos) },
+    { titulo: 'Compras', valor: t => centavosCsv(t.comprasCentavos) },
+    { titulo: 'Ventas - compras', valor: t => centavosCsv(t.flujoCentavos) }
+  ]))
+}
+
 const etiquetas = computed(() => (data.value?.serie ?? []).map(p => formatPeriodo(p.periodo, data.value!.periodo)))
 </script>
 
@@ -47,6 +59,7 @@ const etiquetas = computed(() => (data.value?.serie ?? []).map(p => formatPeriod
 
       <GraficaCard
         titulo="Ventas vs. compras por periodo"
+        :archivo="`ventas-vs-compras_${sufijo}`"
         :datos="data.serie"
         :etiquetas="etiquetas"
         :series="[
@@ -58,7 +71,18 @@ const etiquetas = computed(() => (data.value?.serie ?? []).map(p => formatPeriod
 
       <UCard variant="outline">
         <template #header>
-          <SectionLabel>Por tienda</SectionLabel>
+          <div class="flex items-center justify-between">
+            <SectionLabel>Por tienda</SectionLabel>
+            <UButton
+              v-if="data.porTienda.length"
+              label="CSV"
+              icon="i-lucide-download"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              @click="exportarTiendas"
+            />
+          </div>
         </template>
         <UEmpty
           v-if="!data.porTienda.length"
