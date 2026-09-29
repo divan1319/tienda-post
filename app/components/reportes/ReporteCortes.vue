@@ -23,6 +23,24 @@ const columns: TableColumn<Turno>[] = [
   { accessorKey: 'diferenciaCentavos', header: 'Diferencia' }
 ]
 
+function exportar() {
+  if (!data.value) return
+  const f = filtros.value
+  descargarCsv(nombreArchivoCsv('cortes-de-caja', f.tiendaId ? `tienda-${f.tiendaId}` : 'todas', f.desde, f.hasta), generarCsv(data.value.turnos, [
+    { titulo: 'Turno', valor: t => t.id },
+    { titulo: 'Tienda', valor: t => t.tiendaNombre },
+    { titulo: 'Usuario', valor: t => t.usuario },
+    { titulo: 'Abierto', valor: t => fechaHoraCsv(t.abiertoAt) },
+    { titulo: 'Cerrado', valor: t => fechaHoraCsv(t.cerradoAt) },
+    { titulo: 'Inicial', valor: t => centavosCsv(t.montoInicialCentavos) },
+    { titulo: 'Ventas en efectivo', valor: t => centavosCsv(t.ventasEfectivoCentavos) },
+    { titulo: 'Salidas', valor: t => centavosCsv(t.salidasCentavos) },
+    { titulo: 'Esperado', valor: t => centavosCsv(t.efectivoEsperadoCentavos) },
+    { titulo: 'Contado', valor: t => centavosCsv(t.efectivoContadoCentavos) },
+    { titulo: 'Diferencia', valor: t => centavosCsv(t.diferenciaCentavos) }
+  ]))
+}
+
 function colorDiferencia(d: number | null) {
   if (d === null || d === 0) return 'text-success'
   return d < 0 ? 'text-error' : 'text-warning'
@@ -63,6 +81,20 @@ function colorDiferencia(d: number | null) {
       </div>
 
       <UCard variant="outline">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <SectionLabel>Turnos <span class="carbon-data-mono">({{ data.turnos.length }})</span></SectionLabel>
+            <UButton
+              v-if="data.turnos.length"
+              label="CSV"
+              icon="i-lucide-download"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              @click="exportar"
+            />
+          </div>
+        </template>
         <UTable
           :data="data.turnos"
           :columns="columns"

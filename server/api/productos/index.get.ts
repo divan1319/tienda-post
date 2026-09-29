@@ -8,7 +8,9 @@ const querySchema = paginacionSchema.extend({
   categoriaId: z.union([z.literal('sin'), z.coerce.number().int().positive()]).optional(),
   // Solo el admin puede consultar otra tienda distinta de su tienda activa
   tiendaId: queryId,
-  incluirInactivos: z.enum(['true', 'false']).optional()
+  incluirInactivos: z.enum(['true', 'false']).optional(),
+  // bajo: en o bajo el stock mínimo · negativo: stock por corregir · alerta: cualquiera de los dos
+  alerta: z.enum(['bajo', 'negativo', 'alerta']).optional()
 })
 
 // Búsqueda por nombre, código o categoría, con el stock de la tienda.
@@ -31,6 +33,10 @@ export default defineEventHandler(async (event) => {
   } else if (query.categoriaId) {
     filtros.push(eq(producto.categoriaId, query.categoriaId))
   }
+
+  if (query.alerta === 'bajo') filtros.push(condicionStockBajo)
+  if (query.alerta === 'negativo') filtros.push(condicionStockNegativo)
+  if (query.alerta === 'alerta') filtros.push(or(condicionStockBajo, condicionStockNegativo))
 
   const where = and(...filtros)
   const stockDeTienda = and(eq(stockTienda.productoId, producto.id), eq(stockTienda.tiendaId, tiendaId))
@@ -57,7 +63,7 @@ export default defineEventHandler(async (event) => {
       .orderBy(asc(producto.nombre), asc(producto.id))
       .limit(query.limit)
       .offset(query.offset),
-    db.select({ total: count() }).from(producto).where(where)
+    db.select({ total: count() }).from(producto).leftJoin(stockTienda, stockDeTienda).where(where)
   ])
 
   return { tiendaId, total: total?.total ?? 0, items }

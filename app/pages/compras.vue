@@ -185,7 +185,21 @@ async function guardar() {
             type="date"
           />
         </UFormField>
-        <div class="ms-auto">
+        <div class="ms-auto flex gap-2">
+          <UButton
+            :to="urlExportacion('/api/compras/exportar', {
+              tiendaId: tiendaFiltro === 'todas' ? undefined : tiendaFiltro,
+              tipo: tipoFiltro === 'todas' ? undefined : tipoFiltro,
+              desde,
+              hasta
+            })"
+            external
+            download
+            label="Exportar CSV"
+            icon="i-lucide-download"
+            color="neutral"
+            variant="outline"
+          />
           <UButton
             label="Compra directa"
             icon="i-lucide-plus"

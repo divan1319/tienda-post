@@ -1,41 +1,13 @@
-import { z } from 'zod'
-import { and, count, desc, eq, sql, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
 import { tienda, user, venta } from '~~/server/db/schema'
 
-const querySchema = paginacionSchema.extend({
-  tiendaId: queryId,
-  turnoId: queryId,
-  estado: z.enum(['completada', 'anulada']).optional(),
-  metodoPago: z.enum(METODOS_PAGO).optional(),
-  desde: fechaSchema.optional(),
-  hasta: fechaSchema.optional()
-})
+const querySchema = paginacionSchema.merge(ventasFiltrosSchema)
 
 // Admin: todas (filtro opcional por tienda). Vendedora: solo sus ventas en su tienda activa.
 export default defineEventHandler(async (event) => {
-  const session = await requireUserSession(event)
   const query = await getValidatedQuery(event, validar(querySchema))
+  const { sinEstado: filtros, where } = await condicionesVentas(event, query)
   const db = useDb()
-
-  let filtroTienda: SQL | undefined
-  let filtroUsuario: SQL | undefined
-  if (isAdmin(session.user)) {
-    filtroTienda = query.tiendaId ? eq(venta.tiendaId, query.tiendaId) : undefined
-  } else {
-    const { tiendaId } = await requireTienda(event)
-    filtroTienda = eq(venta.tiendaId, tiendaId)
-    filtroUsuario = eq(venta.userId, session.user.id)
-  }
-
-  const filtros = [
-    filtroTienda,
-    filtroUsuario,
-    query.turnoId ? eq(venta.turnoId, query.turnoId) : undefined,
-    query.metodoPago ? eq(venta.metodoPago, query.metodoPago) : undefined,
-    query.desde ? desdeFechaLocal(venta.createdAt, query.desde) : undefined,
-    query.hasta ? hastaFechaLocal(venta.createdAt, query.hasta) : undefined
-  ]
-  const where = and(...filtros, query.estado ? eq(venta.estado, query.estado) : undefined)
 
   const [items, [total], [resumen]] = await Promise.all([
     db

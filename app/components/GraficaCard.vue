@@ -11,6 +11,8 @@ const props = withDefaults(defineProps<{
   apilada?: boolean
   cargando?: boolean
   formato?: (valor: number) => string
+  /** Nombre del archivo CSV (sin extensión); si falta, no se ofrece exportar */
+  archivo?: string
 }>(), {
   apilada: false,
   cargando: false,
@@ -27,6 +29,15 @@ const filasTabla = computed(() => props.datos.map((d, i) => ({
 // La etiqueta viaja en cada fila: Unovis entrega al tooltip una copia de la fila
 const datosConEtiqueta = computed(() => props.datos.map((d, i) => ({ ...d, _etiqueta: props.etiquetas[i] ?? '' })))
 
+// Los valores de las series están en centavos: el CSV lleva dólares con punto decimal
+function exportar() {
+  if (!props.archivo) return
+  descargarCsv(nombreArchivoCsv(props.archivo), generarCsv(props.datos.map((d, i) => ({ d, i })), [
+    { titulo: 'Periodo', valor: f => props.etiquetas[f.i] },
+    ...props.series.map(s => ({ titulo: s.nombre, valor: (f: { d: Record<string, number | string> }) => centavosCsv(Number(f.d[s.clave] ?? 0)) }))
+  ]))
+}
+
 const vacia = computed(() => props.datos.every(d => props.series.every(s => !Number(d[s.clave] ?? 0))))
 </script>
 
@@ -35,14 +46,25 @@ const vacia = computed(() => props.datos.every(d => props.series.every(s => !Num
     <template #header>
       <div class="flex items-center justify-between gap-2">
         <SectionLabel>{{ titulo }}</SectionLabel>
-        <UButton
-          :label="verTabla ? 'Ver gráfica' : 'Ver tabla'"
-          :icon="verTabla ? 'i-lucide-chart-column' : 'i-lucide-table'"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          @click="verTabla = !verTabla"
-        />
+        <div class="flex gap-1">
+          <UButton
+            v-if="archivo"
+            label="CSV"
+            icon="i-lucide-download"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            @click="exportar"
+          />
+          <UButton
+            :label="verTabla ? 'Ver gráfica' : 'Ver tabla'"
+            :icon="verTabla ? 'i-lucide-chart-column' : 'i-lucide-table'"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            @click="verTabla = !verTabla"
+          />
+        </div>
       </div>
     </template>
 

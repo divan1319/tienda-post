@@ -29,6 +29,18 @@ const estadoItems = [
   { label: 'Anuladas', value: 'anulada' }
 ]
 
+// Exportación con los mismos filtros que la tabla (una fila por venta o por producto)
+const consultaExportar = computed(() => ({
+  tiendaId: esAdmin.value && tiendaFiltro.value !== 'todas' ? tiendaFiltro.value : undefined,
+  estado: estadoFiltro.value === 'todos' ? undefined : estadoFiltro.value,
+  desde: desde.value || undefined,
+  hasta: hasta.value || undefined
+}))
+const exportarItems = computed(() => [[
+  { label: 'Una fila por venta', icon: 'i-lucide-receipt', to: urlExportacion('/api/ventas/exportar', consultaExportar.value), external: true, download: true },
+  { label: 'Una fila por producto vendido', icon: 'i-lucide-list', to: urlExportacion('/api/ventas/exportar', { ...consultaExportar.value, nivel: 'linea' }), external: true, download: true }
+]])
+
 watch([tiendaFiltro, estadoFiltro, desde, hasta], () => {
   pagina.value = 1
 })
@@ -114,6 +126,17 @@ async function onActualizada(v: VentaTicket) {
             type="date"
           />
         </UFormField>
+        <div class="ms-auto">
+          <UDropdownMenu :items="exportarItems">
+            <UButton
+              label="Exportar CSV"
+              icon="i-lucide-download"
+              color="neutral"
+              variant="outline"
+              trailing-icon="i-lucide-chevron-down"
+            />
+          </UDropdownMenu>
+        </div>
       </div>
 
       <div class="flex flex-wrap gap-4">

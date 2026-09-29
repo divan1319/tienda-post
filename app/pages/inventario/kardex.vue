@@ -42,6 +42,24 @@ const TIPO_LABEL: Record<Movimiento['tipo'], string> = {
   ajuste: 'Ajuste'
 }
 
+const { items: tiendaItems } = useTiendaSeleccionada()
+
+function exportar() {
+  if (!producto.value || !movimientos.value) return
+  const tienda = tiendaItems.value.find(t => t.value === tiendaId.value)?.label
+  // En pantalla van del más reciente al más antiguo; el archivo, en orden cronológico
+  const filas = [...movimientos.value].reverse()
+  descargarCsv(nombreArchivoCsv('kardex', producto.value.nombre, tienda, desde.value, hasta.value), generarCsv(filas, [
+    { titulo: 'Fecha', valor: m => fechaHoraCsv(m.createdAt) },
+    { titulo: 'Tipo', valor: m => TIPO_LABEL[m.tipo] },
+    { titulo: 'Cambio', valor: m => m.cantidad },
+    { titulo: 'Saldo', valor: m => m.saldo },
+    { titulo: 'Unidad', valor: m => m.unidadMedida },
+    { titulo: 'Nota', valor: m => m.nota },
+    { titulo: 'Usuario', valor: m => m.usuario }
+  ]))
+}
+
 const columns: TableColumn<Movimiento>[] = [
   { accessorKey: 'createdAt', header: 'Fecha' },
   { accessorKey: 'tipo', header: 'Tipo' },
@@ -79,6 +97,15 @@ const columns: TableColumn<Movimiento>[] = [
             type="date"
           />
         </UFormField>
+        <UButton
+          v-if="producto && movimientos?.length"
+          label="Exportar CSV"
+          icon="i-lucide-download"
+          color="neutral"
+          variant="outline"
+          class="ms-auto"
+          @click="exportar"
+        />
       </div>
 
       <UEmpty

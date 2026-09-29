@@ -20,6 +20,30 @@ const { data: turnoActual } = await useFetch('/api/caja/turno-actual', {
   immediate: !!estado.value.tiendaActivaId
 })
 
+// Alertas de stock: la vendedora ve su tienda activa; el admin, todas las tiendas
+const { data: alertas } = await useFetch('/api/inventario/alertas', {
+  immediate: esAdmin.value || !!estado.value.tiendaActivaId
+})
+const COLOR_TEXTO = { error: 'text-error', warning: 'text-warning' } as const
+const gruposAlerta = computed(() => [
+  {
+    clave: 'negativo',
+    titulo: 'Stock por corregir',
+    ayuda: 'Se vendió sin stock suficiente: registra una entrada o un ajuste.',
+    icono: 'i-lucide-circle-alert',
+    color: 'error' as const,
+    filas: alertas.value?.porCorregir ?? []
+  },
+  {
+    clave: 'bajo',
+    titulo: 'Stock bajo',
+    ayuda: 'En o por debajo del mínimo definido.',
+    icono: 'i-lucide-triangle-alert',
+    color: 'warning' as const,
+    filas: alertas.value?.bajo ?? []
+  }
+])
+
 // Pedidos pendientes de todas las tiendas (solo admin): hoy, atrasados y próximos
 const { data: pedidos } = await useFetch('/api/pedidos', {
   query: { estado: 'pendiente', limit: 200 },
@@ -110,6 +134,90 @@ function formatFecha(fecha: string) {
           </div>
         </UCard>
       </div>
+
+      <UCard
+        variant="outline"
+        class="mt-4"
+      >
+        <template #header>
+          <SectionLabel>Alertas de stock</SectionLabel>
+        </template>
+        <UEmpty
+          v-if="!gruposAlerta.some(g => g.filas.length)"
+          icon="i-lucide-circle-check"
+          title="Sin alertas de stock"
+          :description="esAdmin ? 'Define el stock mínimo de cada producto desde Productos.' : undefined"
+          variant="naked"
+          size="sm"
+        />
+        <div
+          v-else
+          class="grid gap-4 lg:grid-cols-2"
+        >
+          <div
+            v-for="g in gruposAlerta"
+            :key="g.clave"
+          >
+            <div class="mb-1 flex items-center justify-between gap-2">
+              <p class="flex items-center gap-2 text-sm font-medium">
+                <UIcon
+                  :name="g.icono"
+                  :class="g.filas.length ? COLOR_TEXTO[g.color] : 'text-muted'"
+                />
+                {{ g.titulo }}
+                <UBadge
+                  :label="String(g.filas.length)"
+                  :color="g.filas.length ? g.color : 'neutral'"
+                  variant="subtle"
+                />
+              </p>
+              <UButton
+                v-if="esAdmin && g.filas.length"
+                :to="`/productos?alerta=${g.clave}`"
+                label="Ver"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+              />
+            </div>
+            <p class="mb-2 text-xs text-muted">
+              {{ g.ayuda }}
+            </p>
+            <ul
+              v-if="g.filas.length"
+              class="divide-y divide-default border border-default text-sm"
+            >
+              <li
+                v-for="f in g.filas.slice(0, 8)"
+                :key="`${f.tiendaId}-${f.productoId}`"
+                class="flex justify-between gap-2 px-3 py-2"
+              >
+                <span class="min-w-0 truncate">
+                  {{ f.nombre }}
+                  <span
+                    v-if="esAdmin"
+                    class="block text-xs text-muted"
+                  >{{ f.tiendaNombre }}</span>
+                </span>
+                <span class="carbon-data-mono shrink-0 text-xs">
+                  <span :class="COLOR_TEXTO[g.color]">{{ formatCantidad(f.cantidad, f.unidadMedida) }}</span>
+                  <span
+                    v-if="f.stockMinimo !== null"
+                    class="text-muted"
+                  > / mín. {{ formatCantidad(f.stockMinimo, f.unidadMedida) }}</span>
+                  {{ UNIDAD_ABREV[f.unidadMedida] }}
+                </span>
+              </li>
+            </ul>
+            <p
+              v-if="g.filas.length > 8"
+              class="mt-1 text-xs text-muted"
+            >
+              y {{ g.filas.length - 8 }} más
+            </p>
+          </div>
+        </div>
+      </UCard>
 
       <UCard
         v-if="esAdmin"

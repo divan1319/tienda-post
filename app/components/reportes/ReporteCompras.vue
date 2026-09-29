@@ -20,6 +20,22 @@ const columns: TableColumn<Factura>[] = [
   { accessorKey: 'totalCentavos', header: 'Total' }
 ]
 
+const sufijo = computed(() => `${filtros.value.tiendaId ? `tienda-${filtros.value.tiendaId}` : 'todas'}_${filtros.value.desde}_${filtros.value.hasta}`)
+
+function exportarFacturas() {
+  if (!data.value) return
+  descargarCsv(nombreArchivoCsv('facturas', sufijo.value), generarCsv(data.value.facturas, [
+    { titulo: 'Fecha', valor: f => f.fechaCompra },
+    { titulo: 'Tienda', valor: f => f.tiendaNombre },
+    { titulo: 'Tipo', valor: f => f.tipo === 'pedido' ? 'con pedido' : 'directa' },
+    { titulo: 'Compra', valor: f => f.nombre },
+    { titulo: 'Proveedor', valor: f => f.proveedor },
+    { titulo: 'Factura', valor: f => f.numeroFactura },
+    { titulo: 'Pagada con caja', valor: f => f.turnoPagoId ? `turno ${f.turnoPagoId}` : 'no' },
+    { titulo: 'Total', valor: f => centavosCsv(f.totalCentavos) }
+  ]))
+}
+
 function formatFecha(fecha: string) {
   const [a, m, d] = fecha.split('-')
   return `${d}/${m}/${a}`
@@ -59,6 +75,7 @@ function formatFecha(fecha: string) {
 
       <GraficaCard
         titulo="Compras por periodo"
+        :archivo="`compras-por-periodo_${sufijo}`"
         :datos="data.serie"
         :etiquetas="etiquetas"
         :series="[
@@ -71,7 +88,18 @@ function formatFecha(fecha: string) {
 
       <UCard variant="outline">
         <template #header>
-          <SectionLabel>Facturas del periodo <span class="carbon-data-mono">({{ data.facturas.length }})</span></SectionLabel>
+          <div class="flex items-center justify-between">
+            <SectionLabel>Facturas del periodo <span class="carbon-data-mono">({{ data.facturas.length }})</span></SectionLabel>
+            <UButton
+              v-if="data.facturas.length"
+              label="CSV"
+              icon="i-lucide-download"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              @click="exportarFacturas"
+            />
+          </div>
         </template>
         <UTable
           :data="data.facturas"
