@@ -48,8 +48,7 @@ function escapar(texto: string) {
 
 // Un tooltip con todas las series del periodo: el valor manda, el nombre acompaña
 function tooltip(d: Fila) {
-  const i = props.datos.indexOf(d)
-  const titulo = escapar(props.etiquetas[i] ?? '')
+  const titulo = escapar(String(d._etiqueta ?? ''))
   const filas = props.series.map(s => `
     <div style="display:flex;align-items:center;gap:8px;justify-content:space-between">
       <span style="display:flex;align-items:center;gap:6px;color:var(--ui-text-muted)">
@@ -93,6 +92,7 @@ const triggers = computed(() => ({
         :color="color"
         :group-max-width="series.length * 24 + (series.length - 1) * 2"
         :bar-padding="0.08"
+        :bar-min-height="0"
         :rounded-corners="4"
       />
       <VisAxis

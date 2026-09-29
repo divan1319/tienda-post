@@ -24,6 +24,9 @@ const filasTabla = computed(() => props.datos.map((d, i) => ({
   valores: props.series.map(s => props.formato(Number(d[s.clave] ?? 0)))
 })))
 
+// La etiqueta viaja en cada fila: Unovis entrega al tooltip una copia de la fila
+const datosConEtiqueta = computed(() => props.datos.map((d, i) => ({ ...d, _etiqueta: props.etiquetas[i] ?? '' })))
+
 const vacia = computed(() => props.datos.every(d => props.series.every(s => !Number(d[s.clave] ?? 0))))
 </script>
 
@@ -91,7 +94,7 @@ const vacia = computed(() => props.datos.every(d => props.series.every(s => !Num
       </table>
       <GraficaBarras
         v-else
-        :datos="datos"
+        :datos="datosConEtiqueta"
         :etiquetas="etiquetas"
         :series="series"
         :apilada="apilada"

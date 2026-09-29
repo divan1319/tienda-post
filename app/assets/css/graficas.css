@@ -6,8 +6,12 @@
  *   claro  (#ffffff): #0f62fe blue 60 · #9f1853 magenta 70 → CVD ΔE 26.9, normal 33.3
  *   oscuro (#18181b): #4589ff blue 50 · #d02670 magenta 60 → CVD ΔE 22.6, normal 31.5
  * Orden fijo: la serie 1 siempre es azul (ventas / serie principal).
+ *
+ * Unovis inyecta en tiempo de ejecución `:root { --vis-… }` con sus valores y solo
+ * reconoce su propia clase de modo oscuro (`theme-dark`), no `.dark` de Nuxt: por eso
+ * se usa `html:root` (más específico) para que ganen los tokens de la app en ambos modos.
  */
-:root {
+html:root {
   --serie-1: #0f62fe;
   --serie-2: #9f1853;
 
@@ -39,7 +43,7 @@
   --vis-legend-label-font-size: 12px;
 }
 
-.dark {
+html.dark:root {
   --serie-1: #4589ff;
   --serie-2: #d02670;
 }
