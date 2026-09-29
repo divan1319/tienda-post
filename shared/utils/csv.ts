@@ -59,11 +59,11 @@ export function fechaHoraCsv(valor: string | Date | null | undefined): string {
   return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`
 }
 
-/** Nombre de archivo seguro: letras, números, guiones. */
+/** Nombre de archivo seguro: letras, números, guiones; `_` separa las partes. */
 export function nombreArchivoCsv(...partes: (string | number | undefined | null)[]): string {
   const base = partes
     .filter(p => p !== undefined && p !== null && p !== '')
-    .map(p => String(p).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''))
+    .map(p => String(p).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9_]+/g, '-').replace(/^[-_]+|[-_]+$/g, ''))
     .filter(Boolean)
     .join('_')
   return `${base || 'exportacion'}.csv`

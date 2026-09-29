@@ -54,5 +54,6 @@ describe('formatos', () => {
   it('nombre de archivo sin tildes ni espacios', () => {
     expect(nombreArchivoCsv('Ventas', 'Tienda Año', '2026-09-01')).toBe('ventas_tienda-ano_2026-09-01.csv')
     expect(nombreArchivoCsv()).toBe('exportacion.csv')
+    expect(nombreArchivoCsv('ventas-por-periodo_todas_2026-09-01')).toBe('ventas-por-periodo_todas_2026-09-01.csv')
   })
 })
