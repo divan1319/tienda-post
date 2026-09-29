@@ -9,16 +9,31 @@ declare module '#app' {
   }
 }
 
-// En SSR `useSession(useFetch)` reenvía las cookies de la petición; en el cliente
-// se pide la sesión fresca, porque el resultado de useFetch queda en caché
-// (tras iniciar sesión seguiría devolviendo la sesión nula anterior).
-async function obtenerSesion() {
-  if (import.meta.server) {
-    const { data } = await authClient.useSession(useFetch)
-    return data.value
+type Sesion = typeof authClient.$Infer.Session
+
+/** Solo acepta una sesión real: cualquier otra respuesta (null, HTML, error) cuenta como sin sesión. */
+function comoSesion(valor: unknown): Sesion | null {
+  const s = valor as Sesion | null | undefined
+  return s && typeof s === 'object' && s.user && typeof s.user === 'object' ? s : null
+}
+
+// En SSR se consulta la ruta interna con useRequestFetch, que reenvía las cookies de
+// la petición original. No se usa authClient en el servidor: sin `baseURL`, Better Auth
+// arma la URL con VERCEL_URL (la URL del despliegue) y la pide por la red, sin cookies;
+// si ese dominio responde otra cosa (p. ej. la página de Deployment Protection),
+// `session.user` llega undefined.
+// En el cliente se pide la sesión fresca con getSession (el resultado de useFetch
+// quedaría en caché y tras iniciar sesión seguiría devolviendo la sesión nula anterior).
+async function obtenerSesion(): Promise<Sesion | null> {
+  try {
+    if (import.meta.server) {
+      return comoSesion(await useRequestFetch()('/api/auth/get-session'))
+    }
+    const { data } = await authClient.getSession()
+    return comoSesion(data)
+  } catch {
+    return null
   }
-  const { data } = await authClient.getSession()
-  return data
 }
 
 export default defineNuxtRouteMiddleware(async (to) => {
