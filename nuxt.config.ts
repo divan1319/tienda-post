@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     layoutTransition: { name: 'layout', mode: 'out-in' }
   },
 
-  css: ['~/assets/css/main.css', '~/assets/css/print.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/print.css', '~/assets/css/graficas.css'],
 
   colorMode: {
     preference: 'dark'
