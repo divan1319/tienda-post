@@ -80,15 +80,20 @@ async function cerrarSesion() {
               {{ usuario.email }}
             </p>
           </div>
-          <UButton
-            icon="i-lucide-log-out"
-            color="neutral"
-            variant="ghost"
-            :label="collapsed ? undefined : 'Cerrar sesión'"
-            :square="collapsed"
-            block
-            @click="cerrarSesion"
-          />
+          <div class="flex gap-1">
+            <UButton
+              icon="i-lucide-log-out"
+              color="neutral"
+              variant="ghost"
+              :label="collapsed ? undefined : 'Cerrar sesión'"
+              :square="collapsed"
+              block
+              class="flex-1"
+              @click="cerrarSesion"
+            />
+            <!-- En móvil la barra superior no tiene espacio para el botón de tema -->
+            <UColorModeButton class="sm:hidden" />
+          </div>
         </div>
       </template>
     </UDashboardSidebar>

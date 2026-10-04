@@ -79,22 +79,30 @@ const columns: TableColumn<Movimiento>[] = [
     <template #body>
       <div class="flex flex-wrap items-end gap-2">
         <TiendaFiltro />
-        <div class="w-80">
+        <div class="w-full sm:w-80">
           <ProductoPicker
             v-model="producto"
             :tienda-id="tiendaId"
           />
         </div>
-        <UFormField label="Desde">
+        <UFormField
+          label="Desde"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="desde"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
-        <UFormField label="Hasta">
+        <UFormField
+          label="Hasta"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="hasta"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
         <UButton
@@ -103,7 +111,7 @@ const columns: TableColumn<Movimiento>[] = [
           icon="i-lucide-download"
           color="neutral"
           variant="outline"
-          class="ms-auto"
+          class="w-full justify-center sm:ms-auto sm:w-auto"
           @click="exportar"
         />
       </div>
@@ -119,7 +127,7 @@ const columns: TableColumn<Movimiento>[] = [
         <div class="flex flex-wrap gap-4">
           <UCard
             variant="outline"
-            class="min-w-48"
+            class="w-full sm:w-auto sm:min-w-48"
           >
             <SectionLabel>Stock actual</SectionLabel>
             <p
@@ -161,7 +169,7 @@ const columns: TableColumn<Movimiento>[] = [
             <span class="carbon-data-mono">{{ formatCantidad(row.original.saldo, row.original.unidadMedida) }}</span>
           </template>
           <template #nota-cell="{ row }">
-            <span class="text-muted">{{ row.original.nota || '—' }}</span>
+            <span class="block min-w-40 whitespace-normal text-muted">{{ row.original.nota || '—' }}</span>
           </template>
         </UTable>
       </template>

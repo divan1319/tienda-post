@@ -181,6 +181,7 @@ async function alternarAcceso(u: Usuario) {
       <UTable
         :data="usuarios"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay usuarios."
         class="border border-default"

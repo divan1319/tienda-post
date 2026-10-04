@@ -100,33 +100,45 @@ async function onActualizada(v: VentaTicket) {
         <UFormField
           v-if="esAdmin"
           label="Tienda"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
         >
           <USelect
             v-model="tiendaFiltro"
             :items="tiendaItems"
-            class="w-52"
+            class="w-full sm:w-52"
           />
         </UFormField>
-        <UFormField label="Estado">
+        <UFormField
+          label="Estado"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <USelect
             v-model="estadoFiltro"
             :items="estadoItems"
-            class="w-40"
+            class="w-full sm:w-40"
           />
         </UFormField>
-        <UFormField label="Desde">
+        <UFormField
+          label="Desde"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="desde"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
-        <UFormField label="Hasta">
+        <UFormField
+          label="Hasta"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="hasta"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
-        <div class="ms-auto">
+        <div class="w-full sm:ms-auto sm:w-auto">
           <UDropdownMenu :items="exportarItems">
             <UButton
               label="Exportar CSV"
@@ -134,27 +146,28 @@ async function onActualizada(v: VentaTicket) {
               color="neutral"
               variant="outline"
               trailing-icon="i-lucide-chevron-down"
+              class="w-full justify-center sm:w-auto"
             />
           </UDropdownMenu>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-4">
+      <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
         <UCard
           variant="outline"
-          class="min-w-48"
+          class="sm:min-w-48"
         >
           <SectionLabel>Ventas completadas</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold text-highlighted">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold text-highlighted wrap-anywhere sm:text-2xl">
             {{ data?.resumen.ventas ?? 0 }}
           </p>
         </UCard>
         <UCard
           variant="outline"
-          class="min-w-48"
+          class="sm:min-w-48"
         >
           <SectionLabel>Total vendido</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold text-highlighted">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold text-highlighted wrap-anywhere sm:text-2xl">
             {{ formatUSD(data?.resumen.totalCentavos ?? 0) }}
           </p>
         </UCard>
@@ -163,6 +176,7 @@ async function onActualizada(v: VentaTicket) {
       <UTable
         :data="data?.items ?? []"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay ventas en el periodo."
         class="border border-default"
@@ -212,16 +226,12 @@ async function onActualizada(v: VentaTicket) {
         </template>
       </UTable>
 
-      <div
+      <PaginacionListado
         v-if="(data?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="data?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="data?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <USlideover
         :open="!!seleccionada"

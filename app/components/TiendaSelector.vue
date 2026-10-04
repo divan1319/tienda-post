@@ -33,6 +33,6 @@ const seleccion = computed({
     placeholder="Elegir tienda"
     :loading="guardando"
     :disabled="estado.tiendas.length === 1"
-    class="w-48"
+    class="w-40 sm:w-48"
   />
 </template>

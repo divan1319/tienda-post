@@ -5,7 +5,7 @@ const { usuario } = useUsuario()
 
 <template>
   <div class="flex h-dvh flex-col bg-default">
-    <header class="flex h-14 shrink-0 items-center gap-3 border-b border-default px-4">
+    <header class="flex h-14 shrink-0 items-center gap-2 border-b border-default px-2 sm:gap-3 sm:px-4">
       <UButton
         to="/"
         icon="i-lucide-arrow-left"
@@ -13,15 +13,17 @@ const { usuario } = useUsuario()
         variant="ghost"
         aria-label="Volver al panel"
       />
-      <AppLogo />
-      <span class="font-mono text-xs tracking-widest text-muted uppercase">Punto de venta</span>
-      <div class="ms-auto flex items-center gap-2">
+      <AppLogo compacto-en-movil />
+      <span class="hidden font-mono text-xs tracking-widest text-muted uppercase md:inline">Punto de venta</span>
+      <div class="ms-auto flex min-w-0 items-center gap-1 sm:gap-2">
         <UButton
           to="/caja"
           label="Caja"
+          aria-label="Caja"
           icon="i-lucide-wallet"
           color="neutral"
           variant="ghost"
+          :ui="{ label: 'hidden sm:inline' }"
         />
         <TiendaSelector />
         <span

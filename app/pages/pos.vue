@@ -168,6 +168,13 @@ function quitar(i: number) {
   carrito.value.splice(i, 1)
 }
 
+// En pantallas pequeñas el carrito va plegado bajo los productos: se ve el total
+// y el botón de cobrar, y la lista se despliega a pedido. En lg+ siempre se ve.
+const carritoAbierto = ref(false)
+watch(() => carrito.value.length, (n) => {
+  if (!n) carritoAbierto.value = false
+})
+
 function vaciar() {
   carrito.value = []
   enfocarBusqueda()
@@ -267,7 +274,7 @@ onMounted(enfocarBusqueda)
 <template>
   <div class="flex h-full flex-col lg:flex-row">
     <!-- Productos -->
-    <section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-4">
+    <section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-4 pb-2 lg:pb-4">
       <UInput
         ref="busquedaRef"
         v-model="busqueda"
@@ -279,14 +286,18 @@ onMounted(enfocarBusqueda)
         @keydown.enter.prevent="onBuscarEnter"
       >
         <template #trailing>
-          <UKbd value="Enter" />
+          <UKbd
+            value="Enter"
+            class="hidden lg:inline-flex"
+          />
         </template>
       </UInput>
 
-      <div class="flex flex-wrap gap-1">
+      <div class="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0 lg:pb-0">
         <UButton
           label="Todas"
           size="xs"
+          class="shrink-0"
           :variant="categoria === 'todas' ? 'solid' : 'outline'"
           :color="categoria === 'todas' ? 'primary' : 'neutral'"
           @click="categoria = 'todas'"
@@ -296,6 +307,7 @@ onMounted(enfocarBusqueda)
           :key="c.value"
           :label="c.label"
           size="xs"
+          class="shrink-0"
           :variant="categoria === c.value ? 'solid' : 'outline'"
           :color="categoria === c.value ? 'primary' : 'neutral'"
           @click="categoria = c.value"
@@ -334,9 +346,30 @@ onMounted(enfocarBusqueda)
     </section>
 
     <!-- Carrito -->
-    <aside class="flex max-h-[50dvh] shrink-0 flex-col border-t border-default lg:max-h-none lg:w-104 lg:border-s lg:border-t-0">
-      <div class="flex items-center justify-between px-4 pt-4">
-        <SectionLabel>Carrito <span class="carbon-data-mono">({{ carrito.length }})</span></SectionLabel>
+    <aside class="flex max-h-[60dvh] shrink-0 flex-col border-t border-default lg:max-h-none lg:w-104 lg:border-s lg:border-t-0">
+      <div class="flex min-h-10 items-center justify-between px-4 pt-2 lg:pt-4">
+        <SectionLabel class="hidden lg:block">
+          Carrito <span class="carbon-data-mono">({{ carrito.length }})</span>
+        </SectionLabel>
+        <button
+          type="button"
+          data-carrito-toggle
+          class="flex items-center gap-2 py-1 lg:hidden"
+          :aria-expanded="carritoAbierto"
+          aria-controls="pos-carrito-lista"
+          @click="carritoAbierto = !carritoAbierto"
+        >
+          <SectionLabel>Carrito <span class="carbon-data-mono">({{ carrito.length }})</span></SectionLabel>
+          <UIcon
+            v-if="!carritoAbierto && (errores.some(e => e) || lineasSinStock.length)"
+            name="i-lucide-triangle-alert"
+            class="size-4 text-warning"
+          />
+          <UIcon
+            :name="carritoAbierto ? 'i-lucide-chevron-down' : 'i-lucide-chevron-up'"
+            class="size-4 text-muted"
+          />
+        </button>
         <UButton
           v-if="carrito.length"
           label="Vaciar"
@@ -348,7 +381,11 @@ onMounted(enfocarBusqueda)
         />
       </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+      <div
+        id="pos-carrito-lista"
+        class="min-h-0 flex-1 overflow-y-auto px-4 py-2"
+        :class="{ 'hidden lg:block': !carritoAbierto }"
+      >
         <UEmpty
           v-if="!carrito.length"
           icon="i-lucide-shopping-cart"
@@ -405,22 +442,27 @@ onMounted(enfocarBusqueda)
         </ul>
       </div>
 
-      <div class="space-y-3 border-t border-default p-4">
-        <div class="flex items-baseline justify-between">
+      <!-- En móvil, total y botón en una sola fila para dejar más espacio a los productos -->
+      <div
+        class="flex items-center gap-3 p-4 lg:block lg:space-y-3 lg:border-t lg:border-default lg:pt-4"
+        :class="carritoAbierto ? 'border-t border-default pt-3' : 'pt-2'"
+      >
+        <div class="flex shrink-0 flex-col lg:flex-row lg:items-baseline lg:justify-between">
           <SectionLabel>Total</SectionLabel>
-          <span class="carbon-data-mono text-3xl font-semibold text-highlighted">{{ formatUSD(total) }}</span>
+          <span class="carbon-data-mono text-2xl font-semibold text-highlighted lg:text-3xl">{{ formatUSD(total) }}</span>
         </div>
         <UButton
           size="xl"
           block
           icon="i-lucide-banknote"
+          class="min-w-0 flex-1"
           :disabled="!puedeCobrar"
           @click="abrirCobro"
         >
           Cobrar
           <UKbd
             value="F2"
-            class="ms-2"
+            class="ms-2 hidden lg:inline-flex"
           />
         </UButton>
       </div>
@@ -545,6 +587,7 @@ onMounted(enfocarBusqueda)
               :items="metodoItems"
               orientation="horizontal"
               variant="card"
+              :ui="{ fieldset: 'grid grid-cols-1 gap-2 sm:grid-cols-3' }"
             />
           </UFormField>
 

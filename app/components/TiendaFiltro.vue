@@ -8,6 +8,6 @@ const { tiendaId, items } = useTiendaSeleccionada()
     :items="items"
     icon="i-lucide-store"
     placeholder="Tienda"
-    class="w-48"
+    class="w-full sm:w-48"
   />
 </template>

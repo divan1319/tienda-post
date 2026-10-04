@@ -90,6 +90,7 @@ async function guardar(event: FormSubmitEvent<Schema>) {
       <UTable
         :data="tiendas"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay tiendas registradas."
         class="border border-default"

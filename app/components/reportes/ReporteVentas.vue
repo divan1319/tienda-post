@@ -38,7 +38,7 @@ function porcentaje(parte: number, total: number) {
     />
 
     <template v-if="data">
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatTile
           etiqueta="Total vendido"
           :valor="formatUSD(data.totales.totalCentavos)"
@@ -112,7 +112,7 @@ function porcentaje(parte: number, total: number) {
                 <th class="py-2 text-right font-medium">
                   Cantidad
                 </th>
-                <th class="w-1/3 py-2 font-medium" />
+                <th class="hidden w-1/3 py-2 font-medium sm:table-cell" />
                 <th class="py-2 text-right font-medium">
                   Total
                 </th>
@@ -127,17 +127,17 @@ function porcentaje(parte: number, total: number) {
                 <td class="py-1.5">
                   {{ p.nombre }}
                 </td>
-                <td class="carbon-data-mono py-1.5 text-right tabular-nums">
+                <td class="carbon-data-mono py-1.5 ps-2 text-right whitespace-nowrap tabular-nums">
                   {{ formatCantidad(p.cantidad, p.unidadMedida) }} {{ UNIDAD_ABREV[p.unidadMedida] }}
                 </td>
-                <td class="px-3 py-1.5">
+                <td class="hidden px-3 py-1.5 sm:table-cell">
                   <!-- Barra de una sola serie: largo proporcional al total -->
                   <div
                     class="h-2 rounded-r-xs"
                     :style="{ width: `${(p.totalCentavos / maxProducto) * 100}%`, background: 'var(--serie-1)' }"
                   />
                 </td>
-                <td class="carbon-data-mono py-1.5 text-right tabular-nums">
+                <td class="carbon-data-mono py-1.5 ps-2 text-right tabular-nums">
                   {{ formatUSD(p.totalCentavos) }}
                 </td>
               </tr>

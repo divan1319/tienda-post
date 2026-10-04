@@ -159,33 +159,47 @@ async function guardar() {
 
     <template #body>
       <div class="flex flex-wrap items-end gap-2">
-        <UFormField label="Tienda">
+        <UFormField
+          label="Tienda"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <USelect
             v-model="tiendaFiltro"
             :items="tiendaFiltroItems"
-            class="w-52"
+            class="w-full sm:w-52"
           />
         </UFormField>
-        <UFormField label="Tipo">
+        <UFormField
+          label="Tipo"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <USelect
             v-model="tipoFiltro"
             :items="tipoItems"
-            class="w-40"
+            class="w-full sm:w-40"
           />
         </UFormField>
-        <UFormField label="Desde">
+        <UFormField
+          label="Desde"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="desde"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
-        <UFormField label="Hasta">
+        <UFormField
+          label="Hasta"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UInput
             v-model="hasta"
             type="date"
+            class="w-full sm:w-auto"
           />
         </UFormField>
-        <div class="ms-auto flex gap-2">
+        <div class="flex w-full gap-2 sm:ms-auto sm:w-auto">
           <UButton
             :to="urlExportacion('/api/compras/exportar', {
               tiendaId: tiendaFiltro === 'todas' ? undefined : tiendaFiltro,
@@ -199,19 +213,21 @@ async function guardar() {
             icon="i-lucide-download"
             color="neutral"
             variant="outline"
+            class="grow justify-center sm:grow-0"
           />
           <UButton
             label="Compra directa"
             icon="i-lucide-plus"
+            class="grow justify-center sm:grow-0"
             @click="abrir"
           />
         </div>
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <UCard variant="outline">
           <SectionLabel>Total comprado</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold text-highlighted">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold text-highlighted wrap-anywhere sm:text-2xl">
             {{ formatUSD(data?.resumen.totalCentavos ?? 0) }}
           </p>
           <p class="carbon-data-mono text-sm text-muted">
@@ -220,19 +236,19 @@ async function guardar() {
         </UCard>
         <UCard variant="outline">
           <SectionLabel>Con pedido</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold wrap-anywhere sm:text-2xl">
             {{ formatUSD(data?.resumen.conPedidoCentavos ?? 0) }}
           </p>
         </UCard>
         <UCard variant="outline">
           <SectionLabel>Directas</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold wrap-anywhere sm:text-2xl">
             {{ formatUSD(data?.resumen.directasCentavos ?? 0) }}
           </p>
         </UCard>
         <UCard variant="outline">
           <SectionLabel>Pagado con caja</SectionLabel>
-          <p class="carbon-data-mono mt-2 text-2xl font-semibold">
+          <p class="carbon-data-mono mt-2 text-xl font-semibold wrap-anywhere sm:text-2xl">
             {{ formatUSD(data?.resumen.pagadoConCajaCentavos ?? 0) }}
           </p>
         </UCard>
@@ -241,6 +257,7 @@ async function guardar() {
       <UTable
         :data="data?.items ?? []"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay compras en el periodo."
         class="border border-default"
@@ -316,16 +333,12 @@ async function guardar() {
         @change="onArchivo"
       >
 
-      <div
+      <PaginacionListado
         v-if="(data?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="data?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="data?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <!-- Compra directa -->
       <UModal

@@ -206,6 +206,9 @@ async function guardar() {
         <template #saldo-cell="{ row }">
           <span class="carbon-data-mono">{{ formatCantidad(row.original.saldo, row.original.unidadMedida) }}</span>
         </template>
+        <template #nota-cell="{ row }">
+          <span class="block min-w-40 whitespace-normal">{{ row.original.nota }}</span>
+        </template>
       </UTable>
     </template>
   </UDashboardPanel>

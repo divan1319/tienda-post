@@ -152,7 +152,7 @@ function formatFecha(fecha: string) {
         />
         <div
           v-else
-          class="grid gap-4 lg:grid-cols-2"
+          class="grid grid-cols-1 gap-4 lg:grid-cols-2"
         >
           <div
             v-for="g in gruposAlerta"
@@ -245,7 +245,7 @@ function formatFecha(fecha: string) {
         />
         <div
           v-else
-          class="grid gap-4 lg:grid-cols-3"
+          class="grid grid-cols-1 gap-4 lg:grid-cols-3"
         >
           <div
             v-for="clave in (['hoy', 'atrasado', 'proximo'] as const)"
