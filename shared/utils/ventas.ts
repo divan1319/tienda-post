@@ -13,6 +13,11 @@ export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
   transferencia: 'Transferencia'
 }
 
+// Sin literales `500n`/`1000n`: el target del cliente (es2019) no admite literales BigInt
+// y esbuild avisa al compilar. La función BigInt() sí está disponible en el navegador.
+const QUINIENTOS = BigInt(500)
+const MIL = BigInt(1000)
+
 /**
  * Subtotal de línea: round(precio_unitario_centavos × cantidad), redondeo al centavo
  * más cercano (medio centavo hacia arriba). Se calcula con BigInt sobre milésimas para
@@ -21,7 +26,7 @@ export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
 export function subtotalLinea(precioUnitarioCentavos: number, cantidad: number): number {
   const milesimas = BigInt(aMilesimas(cantidad))
   const producto = BigInt(precioUnitarioCentavos) * milesimas
-  return Number((producto + 500n) / 1000n)
+  return Number((producto + QUINIENTOS) / MIL)
 }
 
 /** Total de la venta: suma de los subtotales ya redondeados. */
