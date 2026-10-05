@@ -82,11 +82,13 @@ const filtros = computed<FiltrosReporte>(() => ({
     </template>
 
     <template #body>
+      <!-- En móvil, sin íconos y con menos relleno para que quepan las cuatro pestañas -->
       <UTabs
         v-model="reporte"
         :items="reportes"
         :content="false"
         variant="link"
+        :ui="{ trigger: 'px-2 sm:px-3', leadingIcon: 'hidden sm:inline-flex' }"
       />
 
       <div class="flex flex-wrap items-end gap-3">
@@ -101,13 +103,28 @@ const filtros = computed<FiltrosReporte>(() => ({
             @click="aplicarPreset(p)"
           />
         </div>
-        <UFormField label="Desde">
-          <UInputDate v-model="desde" />
+        <UFormField
+          label="Desde"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
+          <UInputDate
+            v-model="desde"
+            class="w-full sm:w-auto"
+          />
         </UFormField>
-        <UFormField label="Hasta">
-          <UInputDate v-model="hasta" />
+        <UFormField
+          label="Hasta"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
+          <UInputDate
+            v-model="hasta"
+            class="w-full sm:w-auto"
+          />
         </UFormField>
-        <UFormField label="Agrupar por">
+        <UFormField
+          label="Agrupar por"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <UTabs
             v-model="periodo"
             :items="periodos"
@@ -115,11 +132,14 @@ const filtros = computed<FiltrosReporte>(() => ({
             size="xs"
           />
         </UFormField>
-        <UFormField label="Tienda">
+        <UFormField
+          label="Tienda"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto"
+        >
           <USelect
             v-model="tienda"
             :items="tiendaItems"
-            class="w-52"
+            class="w-full sm:w-52"
           />
         </UFormField>
       </div>

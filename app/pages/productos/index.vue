@@ -189,20 +189,20 @@ async function guardar(event: FormSubmitEvent<Schema>) {
           v-model="busqueda"
           icon="i-lucide-search"
           placeholder="Buscar por nombre o código"
-          class="w-64"
+          class="w-full sm:w-64"
         />
         <USelect
           v-model="categoriaFiltro"
           :items="categoriaItems"
-          class="w-52"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto sm:w-52"
         />
         <USelect
           v-model="alertaFiltro"
           :items="alertaItems"
-          class="w-52"
+          class="min-w-0 grow basis-36 sm:grow-0 sm:basis-auto sm:w-52"
         />
         <TiendaFiltro />
-        <div class="ms-auto flex gap-2">
+        <div class="flex w-full gap-2 sm:ms-auto sm:w-auto">
           <UButton
             v-if="tiendaId"
             :to="urlExportacion('/api/productos/exportar', { tiendaId })"
@@ -212,6 +212,7 @@ async function guardar(event: FormSubmitEvent<Schema>) {
             icon="i-lucide-download"
             color="neutral"
             variant="outline"
+            class="grow justify-center sm:grow-0"
           />
           <UButton
             to="/productos/importar"
@@ -223,6 +224,7 @@ async function guardar(event: FormSubmitEvent<Schema>) {
           <UButton
             label="Nuevo producto"
             icon="i-lucide-plus"
+            class="grow justify-center sm:grow-0"
             @click="abrir()"
           />
         </div>
@@ -235,6 +237,7 @@ async function guardar(event: FormSubmitEvent<Schema>) {
       <UTable
         :data="productos"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay productos que coincidan."
         class="border border-default"
@@ -331,16 +334,12 @@ async function guardar(event: FormSubmitEvent<Schema>) {
         </template>
       </UTable>
 
-      <div
+      <PaginacionListado
         v-if="(data?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="data?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="data?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <UModal
         :open="!!minimoDe"

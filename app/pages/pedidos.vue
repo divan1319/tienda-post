@@ -214,13 +214,15 @@ async function registrarEntrada() {
           v-model="pestana"
           :items="tabs"
           :content="false"
+          class="w-full sm:w-auto"
+          :ui="{ leadingIcon: 'hidden sm:inline-flex' }"
         />
         <USelect
           v-model="tiendaFiltro"
           :items="tiendaFiltroItems"
-          class="w-52"
+          class="min-w-0 flex-1 sm:w-52 sm:flex-none"
         />
-        <div class="ms-auto">
+        <div class="sm:ms-auto">
           <UButton
             label="Nuevo pedido"
             icon="i-lucide-plus"
@@ -232,6 +234,7 @@ async function registrarEntrada() {
       <UTable
         :data="data?.items ?? []"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay pedidos."
         class="border border-default"
@@ -247,6 +250,9 @@ async function registrarEntrada() {
             />
           </div>
         </template>
+        <template #nombre-cell="{ row }">
+          <span class="block min-w-32 whitespace-normal">{{ row.original.nombre }}</span>
+        </template>
         <template #proveedor-cell="{ row }">
           <span class="text-muted">{{ row.original.proveedor || '—' }}</span>
         </template>
@@ -254,7 +260,7 @@ async function registrarEntrada() {
           <span class="carbon-data-mono">{{ row.original.compraTotalCentavos !== null ? formatUSD(row.original.compraTotalCentavos) : '—' }}</span>
         </template>
         <template #nota-cell="{ row }">
-          <span class="text-muted">{{ row.original.nota || '—' }}</span>
+          <span class="block min-w-32 whitespace-normal text-muted">{{ row.original.nota || '—' }}</span>
         </template>
         <template #acciones-cell="{ row }">
           <div
@@ -263,8 +269,10 @@ async function registrarEntrada() {
           >
             <UButton
               label="Recibir"
+              aria-label="Recibir"
               icon="i-lucide-package-check"
               size="xs"
+              :ui="{ label: 'hidden sm:inline' }"
               @click="abrirRecibir(row.original)"
             />
             <UButton
@@ -285,16 +293,12 @@ async function registrarEntrada() {
         </template>
       </UTable>
 
-      <div
+      <PaginacionListado
         v-if="(data?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="data?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="data?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <!-- Crear / editar -->
       <UModal

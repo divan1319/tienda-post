@@ -31,10 +31,24 @@ const x = (_: Fila, i: number) => i
 const ys = computed(() => props.series.map(s => (d: Fila) => Number(d[s.clave] ?? 0)))
 const color = (_: Fila, i: number) => props.series[i]?.color ?? 'var(--serie-1)'
 
-// Como mucho ~10 etiquetas en el eje X para que no se encimen
+// Ancho disponible: en pantallas angostas caben menos etiquetas en el eje X
+const contenedor = useTemplateRef('contenedor')
+const ancho = ref(0)
+let observador: ResizeObserver | undefined
+onMounted(() => {
+  if (!contenedor.value) return
+  observador = new ResizeObserver(([entrada]) => {
+    ancho.value = entrada?.contentRect.width ?? 0
+  })
+  observador.observe(contenedor.value)
+})
+onBeforeUnmount(() => observador?.disconnect())
+
+// Como mucho ~10 etiquetas en el eje X (una cada ~64 px) para que no se encimen
+const maxEtiquetas = computed(() => ancho.value ? Math.min(10, Math.max(2, Math.floor(ancho.value / 64))) : 10)
 const tickValues = computed(() => {
   const n = props.etiquetas.length
-  const paso = Math.max(1, Math.ceil(n / 10))
+  const paso = Math.max(1, Math.ceil(n / maxEtiquetas.value))
   return Array.from({ length: n }, (_, i) => i).filter(i => i % paso === 0)
 })
 const tickX = (i: number | Date) => props.etiquetas[Number(i)] ?? ''
@@ -65,7 +79,10 @@ const triggers = computed(() => ({
 </script>
 
 <template>
-  <div class="space-y-2">
+  <div
+    ref="contenedor"
+    class="space-y-2"
+  >
     <VisBulletLegend
       v-if="series.length > 1"
       :items="leyenda"

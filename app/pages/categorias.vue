@@ -90,6 +90,7 @@ async function guardar(event: FormSubmitEvent<Schema>) {
       <UTable
         :data="categorias"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay categorías. Los productos sin categoría aparecen como «Sin categoría»."
         class="border border-default"

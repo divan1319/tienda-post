@@ -33,7 +33,8 @@ type Entrada = NonNullable<typeof data.value>['items'][number]
 const columns: TableColumn<Entrada>[] = [
   { accessorKey: 'id', header: '#' },
   { accessorKey: 'createdAt', header: 'Fecha' },
-  { accessorKey: 'tiendaNombre', header: 'Tienda' },
+  // Repite la tienda del filtro: en pantallas pequeñas se oculta
+  { accessorKey: 'tiendaNombre', header: 'Tienda', meta: { class: { th: 'hidden md:table-cell', td: 'hidden md:table-cell' } } },
   { accessorKey: 'usuario', header: 'Registró' },
   { accessorKey: 'lineas', header: 'Productos' },
   { accessorKey: 'nota', header: 'Nota' },
@@ -143,7 +144,7 @@ async function guardar() {
 
     <template #body>
       <div class="flex flex-wrap items-center gap-2">
-        <TiendaFiltro />
+        <TiendaFiltro class="min-w-0 flex-1 sm:flex-none" />
         <div class="ms-auto">
           <UButton
             label="Nueva entrada"
@@ -156,6 +157,7 @@ async function guardar() {
       <UTable
         :data="data?.items ?? []"
         :columns="columns"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="status === 'pending'"
         empty="No hay entradas en esta tienda. Registra el inventario inicial con una entrada."
         class="border border-default"
@@ -170,7 +172,7 @@ async function guardar() {
           <span class="carbon-data-mono">{{ row.original.lineas }}</span>
         </template>
         <template #nota-cell="{ row }">
-          <span class="text-muted">{{ row.original.nota || '—' }}</span>
+          <span class="block min-w-40 whitespace-normal text-muted">{{ row.original.nota || '—' }}</span>
         </template>
         <template #acciones-cell="{ row }">
           <div class="flex justify-end">
@@ -185,16 +187,12 @@ async function guardar() {
         </template>
       </UTable>
 
-      <div
+      <PaginacionListado
         v-if="(data?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="data?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="data?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <!-- Detalle -->
       <UModal
@@ -296,9 +294,9 @@ async function guardar() {
               <li
                 v-for="(l, i) in lineas"
                 :key="l.producto.id"
-                class="flex items-center gap-3 px-3 py-2"
+                class="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2"
               >
-                <div class="min-w-0 flex-1">
+                <div class="w-full min-w-0 sm:w-auto sm:flex-1">
                   <p class="truncate text-sm font-medium">
                     {{ l.producto.nombre }}
                   </p>
@@ -323,6 +321,7 @@ async function guardar() {
                   color="neutral"
                   variant="ghost"
                   aria-label="Quitar"
+                  class="ms-auto sm:ms-0"
                   @click="quitar(i)"
                 />
               </li>

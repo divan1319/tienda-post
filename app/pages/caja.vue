@@ -307,12 +307,13 @@ function colorDiferencia(d: number | null) {
           <USelect
             v-model="tiendaFiltro"
             :items="tiendaFiltroItems"
-            class="w-52"
+            class="w-full sm:w-52"
           />
         </div>
         <UTable
           :data="abiertos?.items ?? []"
           :columns="columnasAbiertos"
+          :column-pinning="ACCIONES_FIJAS"
           empty="No hay turnos abiertos."
           class="border border-default"
         >
@@ -329,18 +330,22 @@ function colorDiferencia(d: number | null) {
             <div class="flex justify-end gap-1">
               <UButton
                 label="Ver"
+                aria-label="Ver turno"
                 icon="i-lucide-eye"
                 size="xs"
                 color="neutral"
                 variant="ghost"
+                :ui="{ label: 'hidden sm:inline' }"
                 @click="verTurno(row.original.id)"
               />
               <UButton
                 label="Salida de efectivo"
+                aria-label="Salida de efectivo"
                 icon="i-lucide-hand-coins"
                 size="xs"
                 color="neutral"
                 variant="outline"
+                :ui="{ label: 'hidden sm:inline' }"
                 @click="abrirSalida(row.original.id)"
               />
             </div>
@@ -355,12 +360,13 @@ function colorDiferencia(d: number | null) {
           v-if="esAdmin"
           v-model="tiendaFiltro"
           :items="tiendaFiltroItems"
-          class="w-52"
+          class="w-full sm:w-52"
         />
       </div>
       <UTable
         :data="turnos?.items ?? []"
         :columns="columnasCortes"
+        :column-pinning="ACCIONES_FIJAS"
         :loading="turnosStatus === 'pending'"
         empty="Aún no hay turnos cerrados."
         class="border border-default"
@@ -397,16 +403,12 @@ function colorDiferencia(d: number | null) {
           </div>
         </template>
       </UTable>
-      <div
+      <PaginacionListado
         v-if="(turnos?.total ?? 0) > POR_PAGINA"
-        class="flex justify-end"
-      >
-        <UPagination
-          v-model:page="pagina"
-          :total="turnos?.total ?? 0"
-          :items-per-page="POR_PAGINA"
-        />
-      </div>
+        v-model:page="pagina"
+        :total="turnos?.total ?? 0"
+        :items-per-page="POR_PAGINA"
+      />
 
       <!-- Confirmar cierre -->
       <UModal

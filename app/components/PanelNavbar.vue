@@ -6,7 +6,7 @@ defineProps<{ title: string }>()
   <UDashboardNavbar :title="title">
     <template #right>
       <TiendaSelector />
-      <UColorModeButton />
+      <UColorModeButton class="hidden sm:inline-flex" />
     </template>
   </UDashboardNavbar>
 </template>
