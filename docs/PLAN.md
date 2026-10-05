@@ -106,7 +106,7 @@ El catálogo es único y el stock vive en `stock_tienda`, una fila por tienda y 
 | --- | --- | --- |
 | `tienda` | `id`, `nombre`, `direccion`, `activa`, `ultimo_correlativo` | `ultimo_correlativo` numera las ventas por tienda |
 | `usuario_tienda` | `user_id`, `tienda_id` | PK compuesta |
-| `categoria` | `id`, `nombre`, `activa` | |
+| `categoria` | `id`, `nombre`, `codigo`, `activa` | `codigo` único, snake_case derivado del nombre al crearla |
 | `producto` | `id`, `nombre`, `codigo_barras` (único, opcional), `categoria_id` (opcional), `unidad_medida`, `precio_venta_centavos`, `foto_key` (opcional), `activo` | `unidad_medida`: `unidad`, `libra`, `litro`; el precio es por esa unidad. Mismo precio en todas las tiendas |
 | `stock_tienda` | `tienda_id`, `producto_id`, `cantidad` `numeric(12,3)`, `stock_minimo` `numeric(12,3)` (opcional) | PK compuesta; `cantidad` puede quedar negativa |
 | `movimiento_inventario` | `id`, `tienda_id`, `producto_id`, `tipo`, `cantidad` `numeric(12,3)` (con signo), `referencia_tipo`, `referencia_id`, `user_id`, `nota`, `created_at` | `tipo`: `entrada`, `venta`, `anulacion_venta`, `ajuste` |
@@ -182,7 +182,7 @@ El stock solo cambia por cuatro vías: entradas, ventas, anulaciones y ajustes; 
 - **Categorías (admin):** CRUD simple; un producto sin categoría aparece como "Sin categoría".
 - **Entradas de inventario (admin):** se elige la tienda, se agregan líneas producto + cantidad y se guarda. En una transacción se crea la entrada, se hace upsert en `stock_tienda` (`INSERT … ON CONFLICT (tienda_id, producto_id) DO UPDATE SET cantidad = stock_tienda.cantidad + EXCLUDED.cantidad`) y se escribe un movimiento `entrada` por línea.
 - **Ajustes (admin):** para conteo físico, merma o vencidos, con motivo obligatorio; movimiento `ajuste`.
-- **Carga inicial:** una entrada con la nota "Inventario inicial" por tienda. Importar desde CSV puede venir después.
+- **Carga inicial:** una entrada con la nota "Inventario inicial" por tienda. Los productos se pueden importar en masa desde Excel (`/productos/importar`, ver README).
 - **Kardex:** vista por producto y tienda con los movimientos y el saldo acumulado.
 - **Stock bajo:** si `stock_minimo` está definido, el producto se marca en listados y en el panel. Los productos con stock negativo aparecen aparte como "Stock por corregir" hasta que se registre una entrada o ajuste.
 - **Transferencias entre tiendas:** se hacen como un ajuste de salida en una tienda y una entrada en la otra.
