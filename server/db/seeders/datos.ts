@@ -1,4 +1,5 @@
 import type { UnidadMedida } from '../../../shared/utils/cantidad'
+import { CATEGORIAS } from './catalogos'
 
 // Datos de demostración (ficticios). Precios en centavos.
 
@@ -27,16 +28,7 @@ export function vendedoraDelDia(tienda: ClaveTienda, dia: number): ClaveUsuario 
   return tienda === 'centro' ? 'ana' : 'maria'
 }
 
-export const CATEGORIAS = [
-  'Abarrotes',
-  'Granos básicos',
-  'Bebidas',
-  'Lácteos y huevos',
-  'Panadería',
-  'Limpieza',
-  'Higiene personal',
-  'Snacks y golosinas'
-] as const
+export { CATEGORIAS }
 
 export type Categoria = typeof CATEGORIAS[number]
 

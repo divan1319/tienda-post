@@ -29,6 +29,8 @@ export function handleDbError(err: unknown): never {
 
     if (constraint.includes('codigo_barras') || detail.includes('codigo_barras')) {
       friendlyMessage = 'Ya existe un producto con este código de barras.'
+    } else if (constraint.includes('categoria_codigo') || detail.includes('(codigo)')) {
+      friendlyMessage = 'Ya existe una categoría con este código.'
     } else if (constraint.includes('nombre') || detail.includes('(nombre)')) {
       friendlyMessage = 'Ya existe un registro con este nombre.'
     } else if (constraint.includes('email') || detail.includes('email')) {

@@ -3,6 +3,7 @@ import type { PgTable } from 'drizzle-orm/pg-core'
 import type { Db } from '../index'
 import * as s from '../schema'
 import type { Auth } from '../../lib/auth'
+import { codigoDesdeNombre } from '../../../shared/utils/codigo'
 import { Aleatorio } from './aleatorio'
 import { CATEGORIAS, CONTRASENA_DEMO, MINIMOS_ALTOS, PRODUCTOS, TIENDAS, USUARIOS, codigoInterno, type ClaveTienda, type ClaveUsuario } from './datos'
 import { Libro } from './libro'
@@ -49,7 +50,7 @@ export async function sembrarDemo(db: Db, auth: Auth, opciones: OpcionesDemo = {
   await db.insert(s.tienda).values(TIENDAS.map((t, i) => ({ id: i + 1, nombre: t.nombre, direccion: t.direccion })))
 
   const categoriaIds = new Map<string, number>(CATEGORIAS.map((c, i) => [c, i + 1]))
-  await db.insert(s.categoria).values(CATEGORIAS.map((c, i) => ({ id: i + 1, nombre: c })))
+  await db.insert(s.categoria).values(CATEGORIAS.map((c, i) => ({ id: i + 1, nombre: c, codigo: codigoDesdeNombre(c) })))
 
   let codigo = 0
   const productoIds = PRODUCTOS.map((_, i) => i + 1)

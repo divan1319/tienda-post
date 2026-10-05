@@ -133,6 +133,8 @@ export const unidadMedida = pgEnum('unidad_medida', UNIDADES_MEDIDA)
 export const categoria = pgTable('categoria', {
   id: serial('id').primaryKey(),
   nombre: text('nombre').notNull().unique(),
+  // snake_case sin acentos, derivado del nombre al crearla (codigoDesdeNombre)
+  codigo: text('codigo').notNull().unique(),
   activa: boolean('activa').notNull().default(true)
 })
 

@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
     .select({
       id: categoria.id,
       nombre: categoria.nombre,
+      codigo: categoria.codigo,
       activa: categoria.activa,
       productos: count(producto.id)
     })
