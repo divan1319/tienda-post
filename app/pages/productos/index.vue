@@ -214,6 +214,13 @@ async function guardar(event: FormSubmitEvent<Schema>) {
             variant="outline"
           />
           <UButton
+            to="/productos/importar"
+            label="Importar"
+            icon="i-lucide-file-spreadsheet"
+            color="neutral"
+            variant="outline"
+          />
+          <UButton
             label="Nuevo producto"
             icon="i-lucide-plus"
             @click="abrir()"
