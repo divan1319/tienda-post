@@ -3,6 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { ProductoOpcion } from '~/components/ProductoPicker.vue'
 import { getErrorMessage } from '~/utils/errors'
 import { formatFechaHora } from '~/utils/fechas'
+import type { InternalApi } from 'nitropack/types'
 
 definePageMeta({ admin: true })
 
@@ -49,9 +50,12 @@ const detalleAbierto = computed({
     if (!v) detalleId.value = null
   }
 })
+// Tipo explícito de la respuesta: inferirlo dentro de useAsyncData con la rama
+// `Promise.resolve(null)` agota la profundidad de tipos de TypeScript
+type EntradaDetalle = InternalApi['/api/inventario/entradas/:id']['get']
 const { data: detalle, status: detalleStatus } = await useAsyncData(
   'entrada-detalle',
-  () => detalleId.value ? $fetch(`/api/inventario/entradas/${detalleId.value}`) : Promise.resolve(null),
+  () => detalleId.value ? $fetch<EntradaDetalle>(`/api/inventario/entradas/${detalleId.value}`) : Promise.resolve(null),
   { watch: [detalleId] }
 )
 

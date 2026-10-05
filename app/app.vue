@@ -10,7 +10,11 @@ useHead({
     return titleChunk ? `${titleChunk} | Tienda POS` : 'Tienda POS'
   },
   meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    { name: 'theme-color', content: '#18181b' }
+  ],
+  link: [
+    { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }
   ],
   htmlAttrs: {
     lang: 'es'
@@ -20,6 +24,8 @@ useHead({
 
 <template>
   <UApp :locale="locale">
+    <NuxtPwaManifest />
+    <PwaActualizacion />
     <NuxtLoadingIndicator
       :throttle="100"
       :height="3"

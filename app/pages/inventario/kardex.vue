@@ -2,6 +2,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { ProductoOpcion } from '~/components/ProductoPicker.vue'
 import { formatFechaHora } from '~/utils/fechas'
+import type { InternalApi } from 'nitropack/types'
 
 definePageMeta({ admin: true })
 
@@ -16,11 +17,15 @@ watch(tiendaId, () => {
   producto.value = undefined
 })
 
+// Tipo explícito de la respuesta: inferirlo dentro de useAsyncData con la rama
+// `Promise.resolve(null)` agota la profundidad de tipos de TypeScript
+type MovimientosKardex = InternalApi['/api/inventario/movimientos']['get']
+
 // Solo consulta cuando hay tienda y producto elegidos
 const { data: movimientos, status } = await useAsyncData(
   'kardex',
   () => tiendaId.value && producto.value
-    ? $fetch('/api/inventario/movimientos', {
+    ? $fetch<MovimientosKardex>('/api/inventario/movimientos', {
         query: {
           tiendaId: tiendaId.value,
           productoId: producto.value.id,
